@@ -323,11 +323,6 @@ function areAllMainGroupMatchesCompleted(group) {
 // ---------------------
 
 // Кандидаты на переигровку за выход в Кубок мастеров.
-// Ищем группы игроков с полностью одинаковыми:
-//   - очками
-//   - разницей сетов
-//   - набранными сетами
-// Переигровка нужна только если такая группа затрагивает места 1–3.
 function findMastersTiebreakCandidates(group) {
   const st = group.standings || [];
   if (st.length < 2) return [];
@@ -352,8 +347,6 @@ function findMastersTiebreakCandidates(group) {
     const indices = groupEntries.map((e) => e.index);
     const minIndex = Math.min(...indices);
 
-    // Если группа затрагивает хотя бы одно место в топ-3 (индексы 0,1,2),
-    // нам важно её разрулить переигровкой.
     if (minIndex <= 2) {
       if (minIndex < bestMinIndex) {
         bestMinIndex = minIndex;
@@ -366,7 +359,6 @@ function findMastersTiebreakCandidates(group) {
   return bestClass.map((e) => e.row);
 }
 
-// Создание круга переигровок "каждый с каждым" между указанными игроками
 function createTiebreakMatchesForGroup(tournament, group, playerIds, roundIndex) {
   const base = createRoundRobinMatchesForGroup(tournament.id, group.id, playerIds);
   base.forEach((m) => {
@@ -377,7 +369,6 @@ function createTiebreakMatchesForGroup(tournament, group, playerIds, roundIndex)
 }
 
 // Проверяем группу и при необходимости создаём / требуем переигровки.
-// Возвращает { needTiebreak: boolean, reason: "created" | "incomplete" | null }
 function ensureMastersTiebreakMatches(group, tournament) {
   const allMatches = group.matches || [];
   const mainMatches = allMatches.filter((m) => !m.isTiebreak);
@@ -387,18 +378,14 @@ function ensureMastersTiebreakMatches(group, tournament) {
   if (!areAllMainGroupMatchesCompleted(group)) {
     group.tiebreakInfo = null;
     if (tbMatches.length > 0) {
-      // на всякий случай чистим старые переигровки, если структура менялась
       group.matches = mainMatches;
     }
     return { needTiebreak: false, reason: null };
   }
 
-  // 2) Ищем кандидатов по очкам/разнице/сетам
+  // 2) Ищем кандидатов
   const candidates = findMastersTiebreakCandidates(group);
   if (candidates.length <= 1) {
-    // Равенства, затрагивающего топ-3, больше нет — переигровки не нужны.
-    // ВАЖНО: сами матчи-переигровки не удаляем, чтобы их результаты
-    // учитывались в таблице.
     group.tiebreakInfo = null;
     group.matches = allMatches;
     return { needTiebreak: false, reason: null };
@@ -406,7 +393,7 @@ function ensureMastersTiebreakMatches(group, tournament) {
 
   const candidateIds = candidates.map((c) => c.playerId);
 
-  // 3) Есть ли незаконченные переигровки между этими кандидатами
+  // 3) Есть ли незаконченные переигровки
   const hasIncomplete = tbMatches.some(
     (m) =>
       candidateIds.includes(m.player1Id) &&
@@ -423,8 +410,7 @@ function ensureMastersTiebreakMatches(group, tournament) {
     return { needTiebreak: true, reason: "incomplete" };
   }
 
-  // 4) Все прежние переигровки доиграны, но равенство осталось —
-  // создаём новый круг между теми же кандидатами
+  // 4) Все прежние переигровки доиграны, но равенство осталось — создаём новый круг
   let nextRound = 1;
   if (tbMatches.length > 0) {
     nextRound =
@@ -462,7 +448,7 @@ function computeRoundName(roundIndex, totalRounds) {
   if (fromEnd === 4) return "1/8 финала";
   return `Раунд ${roundIndex + 1}`;
 }
-// Создание базового дерева матчей
+
 function createBracketSkeleton(playersCount, stage) {
   const bracketSize = Math.pow(2, Math.ceil(Math.log2(playersCount)));
   const roundsCount = Math.log2(bracketSize);
@@ -596,14 +582,13 @@ function assignPlayersToBracket(bracket, players) {
   const matchesCount = firstRound.matches.length;
   const stage = firstRound.matches[0]?.stage || null; // "masters" | "challenge"
 
-  // небольшой рандом для разруливания полных равенств
   const shuffled = [...players];
   shuffleInPlace(shuffled);
 
   const N = shuffled.length;
   const byesCount = B - N;
 
-  // --- 1. Выбираем, кто получает BYE ---
+  // --- 1. BYE ---
   const sortedForByes = [...shuffled].sort((a, b) => {
     const pa = a.priority ?? 999;
     const pb = b.priority ?? 999;
@@ -618,16 +603,13 @@ function assignPlayersToBracket(bracket, players) {
     byesCount > 0 ? sortedForByes.slice(0, byesCount) : [];
   const byeIds = new Set(byeRecipients.map((p) => p.id));
 
-  // Игроки, которые реально играют в первом раунде
   const playing = shuffled.filter((p) => !byeIds.has(p.id));
 
-  // Заготовка слотов матчей первого раунда
   const matchesSlots = Array.from({ length: matchesCount }, () => ({
     p1: null,
     p2: null,
   }));
 
-  // --- 2. Расставляем BYE ---
   const freeMatchIndices = Array.from({ length: matchesCount }, (_, i) => i);
   shuffleInPlace(freeMatchIndices);
 
@@ -882,9 +864,6 @@ function createBracketFromPlayers(playersWithPriority, stage) {
 
   const skeleton = createBracketSkeleton(playersWithPriority.length, stage);
   assignPlayersToBracket(skeleton, playersWithPriority);
-
-  // БОЛЬШЕ НЕ ПРОТАЛКИВАЕМ BYE ПО ВСЕЙ СЕТКЕ,
-  // авто-проход делается только из первого раунда в assignPlayersToBracket
 
   return {
     players: playersWithPriority.map((p) => p.id),
@@ -1178,8 +1157,8 @@ function renderPublicPage() {
         </div>
         <div class="lp-separator"></div>
         <p class="lp-text-muted lp-text-xs">
-          Участники — только сотрудники магазина. После завершения регистрации 
-          организаторы распределят игроков по группам, затем начнётся плей-офф.
+          Личный любительский турнир по настольному теннису. После завершения регистрации 
+          организатор распределит игроков по группам, затем начнётся плей-офф.
         </p>
       </div>
 
@@ -1205,10 +1184,6 @@ function renderPublicPage() {
             <label class="lp-text-xs">Фамилия</label>
             <input type="text" name="lastName" class="lp-input" placeholder="Иванов" required />
           </div>
-          <div style="flex:1 1 120px; min-width:120px;">
-            <label class="lp-text-xs">LDAP <span style="color:#ff8;">*</span></label>
-            <input type="text" name="ldap" class="lp-input" placeholder="корпоративный логин" required />
-          </div>
         </div>
         <div style="margin-top:10px; display:flex; justify-content:flex-end;">
           <button type="submit" class="lp-btn lp-btn-primary lp-btn-sm">
@@ -1217,7 +1192,8 @@ function renderPublicPage() {
         </div>
       </form>
       <p class="lp-text-muted lp-text-xs" style="margin-top:6px;">
-        После отправки формы вы появитесь в списке участников. Изменить данные можно только через организатора.
+        После отправки формы вы появитесь в списке участников (по имени и фамилии).
+        Изменить данные можно только через организатора.
       </p>
     `;
   }
@@ -1235,6 +1211,9 @@ function renderPublicPage() {
         <p class="lp-card-subtitle">
           Победа 2:0 — 3 очка; победа 2:1 — 2 очка победителю и 1 очко проигравшему. 
           В скобках — разница сетов.
+        </p>
+        <p class="lp-text-muted lp-text-xs" style="margin-top:4px;">
+          1–2 места в группе выходят в плей-офф Кубка Мастеров, остальные — в плей-офф Кубка Вызова.
         </p>
         <div class="lp-groups-grid">
     `;
@@ -1351,7 +1330,6 @@ function renderPublicPage() {
         html += `</div>`;
       }
 
-      // Переигровки, если есть
       if (tiebreakMatches.length > 0) {
         html += `
           <div class="lp-card-section-title" style="margin-top:10px;">
@@ -1425,6 +1403,16 @@ function renderPublicPage() {
   // Участники
   html += renderPublicParticipantsSection(tournament);
 
+  // Дисклеймер
+  html += `
+    <section class="lp-card" style="margin-top:12px;">
+      <p class="lp-text-muted lp-text-xs" style="text-align:center;">
+        Личный любительский проект для учёта результатов по настольному теннису.
+        Не является официальным ресурсом какой-либо компании или организации.
+      </p>
+    </section>
+  `;
+
   root.innerHTML = html;
 
   const form = document.getElementById("public-registration-form");
@@ -1434,17 +1422,15 @@ function renderPublicPage() {
       const formData = new FormData(form);
       const firstName = String(formData.get("firstName") || "").trim();
       const lastName = String(formData.get("lastName") || "").trim();
-      const ldap = String(formData.get("ldap") || "").trim();
-      if (!firstName || !lastName || !ldap) {
-        alert("Пожалуйста, заполните все поля.");
+      if (!firstName || !lastName) {
+        alert("Пожалуйста, заполните имя и фамилию.");
         return;
       }
-      handlePublicRegisterPlayer(firstName, lastName, ldap);
+      handlePublicRegisterPlayer(firstName, lastName);
       form.reset();
     });
   }
 }
-
 
 // ---------------------
 // Плей-офф (публичная)
@@ -1499,7 +1485,6 @@ function renderPublicPlayoffs(tournament) {
 
   return html;
 }
-
 
 function renderBracket(bracket, playersMap) {
   if (!bracket || !bracket.rounds || bracket.rounds.length === 0) {
@@ -1579,6 +1564,7 @@ function renderBracket(bracket, playersMap) {
   html += `</div>`;
   return html;
 }
+
 // ---------------------
 // Пьедестал + участники
 // ---------------------
@@ -1711,7 +1697,6 @@ function renderPublicParticipantsSection(tournament) {
             <tr>
               <th>Имя</th>
               <th>Фамилия</th>
-              <th>LDAP</th>
               <th>Статус</th>
               <th>Результат</th>
             </tr>
@@ -1731,7 +1716,6 @@ function renderPublicParticipantsSection(tournament) {
       <tr>
         <td>${escapeHtml(p.firstName)}</td>
         <td>${escapeHtml(p.lastName)}</td>
-        <td>${escapeHtml(p.ldap)}</td>
         <td class="lp-status-cell"><span class="${status.className}">${status.label}</span></td>
         <td>${resultCell}</td>
       </tr>
@@ -1746,7 +1730,6 @@ function renderPublicParticipantsSection(tournament) {
   `;
   return html;
 }
-
 
 // ---------------------
 // История матчей (функции оставили, но пока не рендерим)
@@ -1871,7 +1854,7 @@ function bindHistoryFilterHandlers(isAdmin) {
 // Публичные обработчики
 // ---------------------
 
-function handlePublicRegisterPlayer(firstName, lastName, ldap) {
+function handlePublicRegisterPlayer(firstName, lastName) {
   const t = getActiveTournament(currentState);
   if (!t) {
     alert("Активный турнир не найден. Обратитесь к организатору.");
@@ -1889,7 +1872,6 @@ function handlePublicRegisterPlayer(firstName, lastName, ldap) {
       id: generateId("p"),
       firstName: firstName.trim(),
       lastName: lastName.trim(),
-      ldap: ldap.trim(),
     };
     tour.players.push(newPlayer);
   });
@@ -1946,7 +1928,7 @@ function renderAdminPage() {
         <div class="lp-spacer"></div>
         <div style="flex:1 1 200px; min-width:180px;">
           <label class="lp-text-xs">Название нового турнира</label>
-          <input type="text" id="admin-new-tournament-name" class="lp-input" placeholder="Кубок 2025" />
+          <input type="text" id="admin-new-tournament-name" class="lp-input" placeholder="Турнир по настольному теннису" />
         </div>
         <button type="button" class="lp-btn lp-btn-primary lp-btn-sm" data-action="create-tournament">
           Создать турнир
@@ -1980,6 +1962,15 @@ function renderAdminPage() {
           Создайте турнир, чтобы управлять участниками, группами и плей-офф.
         </p>
       </div>
+    `;
+    // Дисклеймер
+    html += `
+      <section class="lp-card" style="margin-top:12px;">
+        <p class="lp-text-muted lp-text-xs" style="text-align:center;">
+          Админ-панель личного любительского турнира по настольному теннису.
+          Не является официальным ресурсом какой-либо компании или организации.
+        </p>
+      </section>
     `;
     root.innerHTML = html;
     bindAdminRootHandlers();
@@ -2018,6 +2009,16 @@ function renderAdminPage() {
   html += renderAdminGroupsSection(tournament);
   html += renderAdminPlayoffsSection(tournament);
 
+  // Дисклеймер
+  html += `
+    <section class="lp-card" style="margin-top:12px;">
+      <p class="lp-text-muted lp-text-xs" style="text-align:center;">
+        Админ-панель личного любительского турнира по настольному теннису.
+        Не является официальным ресурсом какой-либо компании или организации.
+      </p>
+    </section>
+  `;
+
   root.innerHTML = html;
   bindAdminRootHandlers();
 }
@@ -2039,10 +2040,6 @@ function renderAdminPlayersSection(tournament) {
           <label class="lp-text-xs">Фамилия</label>
           <input type="text" id="admin-add-lastName" class="lp-input" placeholder="Иванов" />
         </div>
-        <div style="flex:1 1 120px; min-width:120px;">
-          <label class="lp-text-xs">LDAP</label>
-          <input type="text" id="admin-add-ldap" class="lp-input" placeholder="корп. логин" />
-        </div>
         <button type="button" class="lp-btn lp-btn-primary lp-btn-sm" data-action="add-player">
           Добавить участника
         </button>
@@ -2053,7 +2050,6 @@ function renderAdminPlayersSection(tournament) {
             <tr>
               <th>Имя</th>
               <th>Фамилия</th>
-              <th>LDAP</th>
               <th style="width:150px;">Действия</th>
             </tr>
           </thead>
@@ -2076,11 +2072,6 @@ function renderAdminPlayersSection(tournament) {
           )}" data-player-field="lastName" value="${escapeHtml(
       p.lastName
     )}" />
-        </td>
-        <td>
-          <input type="text" class="lp-input-inline" data-player-id="${escapeHtml(
-            p.id
-          )}" data-player-field="ldap" value="${escapeHtml(p.ldap)}" />
         </td>
         <td>
           <button type="button" class="lp-btn lp-btn-outline lp-btn-sm" data-action="save-player" data-player-id="${escapeHtml(
@@ -2120,6 +2111,10 @@ function renderAdminGroupsSection(tournament) {
         <h3 class="lp-card-title">Групповой этап</h3>
         <span class="lp-card-subtitle">Раунд «каждый с каждым»</span>
       </div>
+      <p class="lp-text-muted lp-text-xs" style="margin-top:4px;">
+        Система очков: победа 2:0 — 3 очка; победа 2:1 — 2 очка победителю и 1 очко проигравшему.
+        1–2 места идут в Кубок мастеров, остальные — в Кубок вызова.
+      </p>
       <div class="lp-row" style="margin-top:8px; flex-wrap:wrap; gap:8px;">
         <button type="button" class="lp-btn lp-btn-outline lp-btn-sm" data-action="generate-groups">
           Распределить по группам (по ~4 чел.)
@@ -2550,6 +2545,7 @@ function renderAdminBracket(bracket, playersMap, bracketType) {
   html += `</div>`;
   return html;
 }
+
 // ---------------------
 // Обработчики Админ-панели
 // ---------------------
@@ -2751,7 +2747,6 @@ function handleFillRandomGroupResults() {
     return;
   }
 
-  // сюда будем складывать номера групп, где понадобились переигровки
   let groupsWithTie = [];
 
   updateState((state) => {
@@ -2766,7 +2761,6 @@ function handleFillRandomGroupResults() {
     ];
 
     tour.groups.forEach((g, idx) => {
-      // заполняем только пустые результаты
       (g.matches || []).forEach((m) => {
         if (m.score1 != null && m.score2 != null) return;
         const [s1, s2] = variants[Math.floor(Math.random() * variants.length)];
@@ -2774,17 +2768,13 @@ function handleFillRandomGroupResults() {
         m.score2 = s2;
       });
 
-      // пересчёт таблицы
       g.standings = recomputeGroupStandings(g, tour);
 
-      // ✅ сразу проверяем необходимость переигровок
       const tb = ensureMastersTiebreakMatches(g, tour);
       if (tb.needTiebreak) {
-        groupsWithTie.push(idx + 1); // запомним номер группы (человеческий, с 1)
+        groupsWithTie.push(idx + 1);
       }
     });
-
-    // историю матчей не трогаем
   });
 
   if (groupsWithTie.length) {
@@ -2859,12 +2849,10 @@ function handleAddPlayer() {
   if (!adminEditingTournamentId) return;
   const firstNameEl = document.getElementById("admin-add-firstName");
   const lastNameEl = document.getElementById("admin-add-lastName");
-  const ldapEl = document.getElementById("admin-add-ldap");
   const firstName = (firstNameEl?.value || "").trim();
   const lastName = (lastNameEl?.value || "").trim();
-  const ldap = (ldapEl?.value || "").trim();
-  if (!firstName || !lastName || !ldap) {
-    alert("Заполните Имя, Фамилию и LDAP.");
+  if (!firstName || !lastName) {
+    alert("Заполните Имя и Фамилию.");
     return;
   }
 
@@ -2875,14 +2863,12 @@ function handleAddPlayer() {
       id: generateId("p"),
       firstName,
       lastName,
-      ldap,
     };
     tour.players.push(newPlayer);
   });
 
   if (firstNameEl) firstNameEl.value = "";
   if (lastNameEl) lastNameEl.value = "";
-  if (ldapEl) ldapEl.value = "";
 }
 
 function handleSavePlayer(playerId) {
@@ -3056,7 +3042,6 @@ function handleSaveGroupMatch(groupId, matchId) {
     return;
   }
 
-  // флаги, которые заполним внутри updateState
   let tiebreakCreated = false;
   let tiebreakGroupNumber = null;
 
@@ -3071,13 +3056,10 @@ function handleSaveGroupMatch(groupId, matchId) {
     match.score1 = s1;
     match.score2 = s2;
 
-    // пересчёт таблицы
     group.standings = recomputeGroupStandings(group, tour);
 
-    // ✅ проверка переигровок после этого матча
     const tbResult = ensureMastersTiebreakMatches(group, tour);
 
-    // нас интересует момент, когда именно сейчас были СОЗДАНЫ новые переигровки
     if (tbResult && tbResult.needTiebreak && tbResult.reason === "created") {
       tiebreakCreated = true;
       const idx = tour.groups.findIndex((g) => g.id === groupId);
@@ -3119,7 +3101,6 @@ function handleSaveGroupMatch(groupId, matchId) {
     }
   });
 
-  // уже после сохранения состояния показываем уведомление
   if (tiebreakCreated) {
     const groupText = tiebreakGroupNumber
       ? `В группе ${tiebreakGroupNumber}`
@@ -3128,7 +3109,7 @@ function handleSaveGroupMatch(groupId, matchId) {
       groupText +
         " полное равенство за выход в Кубок мастеров.\n" +
         "Созданы матчи-переигровки справа от основных матчей. " +
-        "Сначала сыграйте их, затем сформируйте плей-офф."
+        "Сначала сыграйте их, затем снова нажмите «Сформировать плей-офф»."
     );
   }
 }

@@ -16,14 +16,15 @@ import {
   onSnapshot,
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-// ==== ТВОЙ firebaseConfig ====
+// ==== ТВОЙ firebaseConfig (НОВЫЙ проект tennis-312ab) ====
 const firebaseConfig = {
-  apiKey: "AIzaSyAzkPU0Pq_GfGCWqoY9ROpmrS0p7Msdncw",
-  authDomain: "tennis-lemanapro.firebaseapp.com",
-  projectId: "tennis-lemanapro",
-  storageBucket: "tennis-lemanapro.firebasestorage.app",
-  messagingSenderId: "365828417446",
-  appId: "1:365828417446:web:adf1755d98394f58a05167",
+  apiKey: "AIzaSyBS4ftWIZQ0ETkmpZVA1I5UM3knRz3YOZs",
+  authDomain: "tennis-312ab.firebaseapp.com",
+  projectId: "tennis-312ab",
+  storageBucket: "tennis-312ab.firebasestorage.app",
+  messagingSenderId: "675391646244",
+  appId: "1:675391646244:web:74e60327bb0bc97180c6b1",
+  // measurementId нам не нужен для Firestore, можно не использовать
 };
 
 const app = initializeApp(firebaseConfig);
@@ -75,7 +76,7 @@ export async function saveStateToCloud(state) {
     const clean = JSON.parse(JSON.stringify(normalizeState(state)));
     await setDoc(STATE_DOC, clean, { merge: false });
   } catch (e) {
-    console.error("[firebase] saveStateToCloud error:", e);
+    console.error("[firebase] saveStateFromCloud error:", e);
     throw e;
   }
 }

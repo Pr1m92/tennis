@@ -1,0 +1,367 @@
+:root{
+  --wall-zoom: 1;
+  --wall-font: 12px;
+
+  --wall-card-radius: 14px;
+  --wall-gap: 10px;
+
+  --wall-border: rgba(255,255,255,0.10);
+  --wall-border-soft: rgba(255,255,255,0.06);
+  --wall-bg: rgba(255,255,255,0.02);
+
+  --wall-text: #f4f4f4;
+  --wall-muted: rgba(255,255,255,0.58);
+  --wall-accent: var(--accent-strong, #ffd300);
+
+  --wall-good: #6dff8f;
+}
+
+body.wall{
+  text-rendering: geometricPrecision;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.wall-root{
+  padding: 8px;
+  font-size: calc(var(--wall-font) * var(--wall-zoom));
+  color: var(--wall-text);
+}
+
+/* toolbar */
+.wall-toolbar{
+  position: fixed;
+  right: 10px;
+  bottom: 10px;
+  z-index: 9999;
+  display: flex;
+  gap: 8px;
+}
+.wall-fab{
+  appearance: none;
+  border: 1px solid rgba(255,255,255,0.18);
+  background: rgba(0,0,0,0.55);
+  color: #fff;
+  padding: 10px 12px;
+  border-radius: 999px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  cursor: pointer;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.45);
+}
+.wall-fab:hover{
+  border-color: rgba(255,211,0,0.35);
+  box-shadow: 0 10px 28px rgba(0,0,0,0.55);
+}
+.wall-fab:active{ transform: translateY(1px); }
+
+/* сетка групп */
+#groups-container{
+  display: grid;
+  gap: var(--wall-gap);
+}
+
+/* колонки */
+body.wall-cols-5 #groups-container{ grid-template-columns: repeat(5, minmax(0, 1fr)); }
+body.wall-cols-4 #groups-container{ grid-template-columns: repeat(4, minmax(0, 1fr)); }
+body.wall-cols-3 #groups-container{ grid-template-columns: repeat(3, minmax(0, 1fr)); }
+body.wall-cols-2 #groups-container{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+body.wall-cols-1 #groups-container{ grid-template-columns: repeat(1, minmax(0, 1fr)); }
+
+/* карточка группы */
+.wall-group{
+  margin: 0;
+  padding: 8px 10px 10px;
+  border-radius: var(--wall-card-radius);
+  background: var(--wall-bg);
+  border: 1px solid var(--wall-border);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.45);
+  overflow: hidden;
+  position: relative;
+}
+
+.wall-group::before{
+  content:"";
+  position:absolute;
+  left:0; right:0; top:0;
+  height: 2px;
+  background: linear-gradient(90deg, rgba(255,211,0,0.0), rgba(255,211,0,0.55), rgba(255,211,0,0.0));
+  opacity: 0.8;
+}
+
+.wall-group-title{
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  gap: 10px;
+  font-weight: 800;
+  font-size: 13px;
+  margin-bottom: 6px;
+  color: var(--wall-accent);
+  letter-spacing: 0.2px;
+  text-shadow: 0 0 10px rgba(255,211,0,0.25);
+}
+
+.wall-title-right{
+  display:flex;
+  align-items:center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.wall-group-title .wall-title-right-text{
+  color: var(--wall-muted);
+  font-weight: 700;
+  font-size: 11px;
+  text-shadow: none;
+}
+
+/* бейдж готовности */
+.wall-badge{
+  display:inline-flex;
+  align-items:center;
+  gap: 6px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 900;
+  letter-spacing: 0.35px;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(0,0,0,0.35);
+  color: rgba(255,255,255,0.75);
+}
+.wall-badge::before{
+  content:"";
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.35);
+}
+.wall-badge--done{
+  border-color: rgba(109,255,143,0.35);
+  background: rgba(109,255,143,0.08);
+  color: rgba(109,255,143,0.95);
+  box-shadow: 0 0 18px rgba(109,255,143,0.20);
+}
+.wall-badge--done::before{ background: rgba(109,255,143,0.95); }
+
+/* прогресс */
+.wall-progress{
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.05);
+  overflow: hidden;
+  margin: 0 0 8px;
+}
+.wall-progress > span{
+  display:block;
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, rgba(255,211,0,0.55), rgba(255,211,0,0.18));
+  box-shadow: 0 0 12px rgba(255,211,0,0.25);
+}
+.wall-progress--done > span{
+  background: linear-gradient(90deg, rgba(109,255,143,0.65), rgba(109,255,143,0.18));
+  box-shadow: 0 0 14px rgba(109,255,143,0.22);
+}
+
+/* внутри группы */
+.wall-group-body{
+  display: grid;
+  grid-template-columns: 0.92fr 1.08fr;
+  gap: 10px;
+  align-items: start;
+  min-width: 0;
+}
+.wall-standings{ min-width: 0; }
+.wall-matches{ min-width: 0; }
+
+/* скрыть матчи */
+body.wall-hide-matches .wall-group-body{ grid-template-columns: 1fr; }
+body.wall-hide-matches .wall-matches{ display:none; }
+
+/* таблица */
+.wall-table{
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: rgba(0,0,0,0.16);
+  border: 1px solid var(--wall-border-soft);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.wall-table thead th{
+  padding: 5px 6px;
+  font-size: 10.5px;
+  color: rgba(255,255,255,0.62);
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  background: rgba(255,255,255,0.03);
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+
+.wall-table td{
+  padding: 3px 6px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  color: #fff;
+  vertical-align: middle;
+}
+
+.wall-table tbody tr:last-child td{ border-bottom: none; }
+
+.wall-table td:first-child{
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.wall-score{
+  text-align: right;
+  width: 44px;
+  font-weight: 900;
+  color: var(--wall-accent);
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 8px rgba(255,211,0,0.18);
+}
+
+/* полосы (не ломают подсветку) */
+.wall-table tbody tr:nth-child(even) td{
+  background-color: rgba(255,255,255,0.012);
+}
+
+/* подсветка топ-2 */
+.wall-row--top td{
+  background-color: rgba(255,211,0,0.035);
+  background-image: radial-gradient(circle at left, rgba(255,211,0,0.20) 0, rgba(255,211,0,0.12) 35%, rgba(0,0,0,0) 75%);
+}
+
+/* матчи */
+.wall-group .lp-matches-list{
+  margin-top: 0;
+  padding: 2px 6px;
+  border-radius: 12px;
+  max-width: 100%;
+  width: 100%;
+  border: 1px solid rgba(255,255,255,0.06);
+  background: rgba(0,0,0,0.12);
+}
+
+.wall-group .lp-match-player{
+  font-size: 11px;
+  padding: 2px 0;
+}
+
+.wall-group .lp-match-score{
+  font-size: 11px;
+  padding: 2px 7px;
+  min-width: 34px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* если матчей нет */
+.wall-empty{
+  color: #999;
+  font-size: 11px;
+  padding: 6px 8px;
+  border-radius: 12px;
+  border: 1px dashed rgba(255,255,255,0.12);
+}
+
+/* загрузка */
+.loading{
+  color: #999;
+  text-align: center;
+  padding: 22px 10px;
+}
+
+/* ЛЕГЕНДА снизу */
+.wall-legend{
+  position: sticky;
+  bottom: 0;
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(0,0,0,0.45);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.40);
+  backdrop-filter: blur(10px);
+}
+
+.wall-legend-title{
+  font-weight: 900;
+  letter-spacing: 0.25px;
+  color: rgba(255,255,255,0.90);
+  margin-bottom: 6px;
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.wall-legend-title .hint{
+  font-size: 10.5px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.55);
+  white-space: nowrap;
+}
+
+.wall-legend-grid{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.wall-legend-box{
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.03);
+  padding: 8px 10px;
+}
+
+.wall-legend-box h4{
+  margin: 0 0 6px;
+  font-size: 11px;
+  letter-spacing: 0.25px;
+  color: rgba(255,255,255,0.78);
+  text-transform: uppercase;
+}
+.wall-legend-box ul{
+  margin: 0;
+  padding-left: 16px;
+  color: rgba(255,255,255,0.78);
+  font-size: 11px;
+  line-height: 1.25;
+}
+.wall-legend-box li{ margin: 3px 0; }
+
+.wall-pill{
+  display:inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-weight: 900;
+  font-size: 10.5px;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(0,0,0,0.25);
+  color: rgba(255,255,255,0.78);
+  vertical-align: middle;
+}
+.wall-pill--masters{
+  border-color: rgba(255,211,0,0.30);
+  background: rgba(255,211,0,0.08);
+  color: rgba(255,211,0,0.95);
+  box-shadow: 0 0 16px rgba(255,211,0,0.14);
+}
+.wall-pill--challenge{
+  border-color: rgba(160,200,255,0.22);
+  background: rgba(160,200,255,0.06);
+  color: rgba(180,210,255,0.90);
+  box-shadow: 0 0 16px rgba(160,200,255,0.10);
+}
+
+@media (max-width: 1100px){
+  body.wall-cols-3 #groups-container{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .wall-group-body{ grid-template-columns: 1fr; }
+  .wall-legend-grid{ grid-template-columns: 1fr; }
+}

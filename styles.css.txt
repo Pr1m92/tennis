@@ -1,0 +1,1114 @@
+:root {
+  --bg: #050505;
+  --bg-alt: #0b0b0b;
+  --card-bg: #111111;
+  --accent: #ffd300;
+  --accent-soft: rgba(255, 211, 0, 0.16);
+  --accent-strong: #ffea4d;
+  --accent-glow: rgba(255, 211, 0, 0.55);
+  --accent-glow-soft: rgba(255, 211, 0, 0.18);
+  --text-main: #f5f5f5;
+  --text-muted: #9a9a9a;
+  --danger: #ff5252;
+  --danger-soft: rgba(255, 82, 82, 0.16);
+  --border-soft: rgba(255, 255, 255, 0.07);
+  --pill-gray: #2a2a2a;
+  --pill-group: #21425f;
+  --pill-masters: #5a4a00;
+  --pill-challenge: #4a1010;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --shadow-soft: 0 16px 40px rgba(0, 0, 0, 0.6);
+  --transition-fast: 0.15s ease-out;
+
+  /* базовый фон строк таблицы (и для закреплённого столбца тоже) */
+  --table-row-bg: #050505;
+}
+
+/* ==== GLOBAL RESET ==== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  color: var(--text-main);
+  background:
+    radial-gradient(circle at top left, #262018 0, #050505 45%, #000000 100%),
+    linear-gradient(145deg, #050505 0, #171717 35%, #050505 100%);
+  background-size: 200% 200%;
+  animation: lp-bg-move 30s linear infinite;
+}
+
+@keyframes lp-bg-move {
+  0% {
+    background-position: 0% 0%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 0%;
+  }
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+}
+
+/* лёгкий «турнирный» паттерн-сетка на фоне */
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.15;
+  background-image:
+    linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+  background-size: 40px 40px;
+  mix-blend-mode: soft-light;
+  z-index: -1;
+}
+
+/* ==== HEADER / FOOTER ==== */
+
+.lp-header {
+  border-bottom: 1px solid var(--border-soft);
+  background: linear-gradient(
+    120deg,
+    rgba(255, 211, 0, 0.10),
+    rgba(0, 0, 0, 0.96)
+  );
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  backdrop-filter: blur(18px);
+  box-shadow:
+    0 2px 16px rgba(0, 0, 0, 0.8),
+    0 0 22px rgba(255, 211, 0, 0.18);
+}
+
+.lp-header-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 14px 16px 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.lp-title {
+  margin: 0;
+  font-size: clamp(1.4rem, 2vw, 1.7rem);
+  letter-spacing: 0.03em;
+}
+
+.lp-subtitle {
+  margin: 4px 0 0;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.lp-nav {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.lp-nav-link {
+  font-size: 0.85rem;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  color: var(--text-muted);
+  text-decoration: none;
+  background: rgba(0, 0, 0, 0.45);
+  transition: var(--transition-fast);
+}
+
+.lp-nav-link:hover {
+  color: var(--text-main);
+  border-color: var(--border-soft);
+}
+
+.lp-nav-link--active {
+  color: #000;
+  background: var(--accent);
+  border-color: transparent;
+  font-weight: 600;
+  position: relative;
+}
+
+.lp-nav-link--active::after {
+  content: "";
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: -6px;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, var(--accent-strong), transparent);
+  box-shadow: 0 0 16px rgba(255, 211, 0, 0.9);
+}
+
+/* геро-кнопка под шапкой */
+
+.lp-header-cta {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 16px 12px;
+}
+
+.lp-btn-main {
+  position: relative;
+  overflow: hidden;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.9),
+    0 0 24px var(--accent-glow-soft);
+}
+
+.lp-btn-main::before {
+  content: "";
+  position: absolute;
+  inset: -40%;
+  background: radial-gradient(circle at 0% 0%, var(--accent-glow), transparent 55%);
+  opacity: 0;
+  transform: translate3d(-40%, -40%, 0);
+  transition: opacity 0.35s ease-out, transform 0.35s ease-out;
+}
+
+.lp-btn-main:hover::before {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+/* ==== СЕКЦИОННЫЙ НАВБАР ==== */
+
+.lp-section-nav {
+  position: sticky;
+  top: 76px; /* чуть ниже шапки */
+  z-index: 15;
+  margin: 0 auto 10px;
+  max-width: 1200px;
+  padding: 6px 16px 8px;
+  backdrop-filter: blur(16px);
+  background: linear-gradient(90deg, rgba(0,0,0,0.92), rgba(0,0,0,0.86));
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.lp-section-nav-inner {
+  display: flex;
+  gap: 6px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+}
+
+.lp-section-nav-inner::-webkit-scrollbar {
+  height: 0;
+}
+
+.lp-section-nav-link {
+  white-space: nowrap;
+  font-size: 0.78rem;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(10, 10, 10, 0.9);
+  color: var(--text-muted);
+  text-decoration: none;
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+.lp-section-nav-link:hover {
+  border-color: rgba(255, 211, 0, 0.6);
+  color: var(--accent-strong);
+}
+
+.lp-main {
+  max-width: 1200px;
+  width: 100%;
+  margin: 16px auto 24px;
+  padding: 0 16px 24px;
+  flex: 1;
+}
+
+.lp-footer {
+  border-top: 1px solid var(--border-soft);
+  padding: 10px 16px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-align: center;
+  background: #050505;
+}
+
+/* ==== LOADING ==== */
+
+.lp-loading {
+  padding: 40px 20px;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+/* ==== LAYOUT HELPERS ==== */
+
+.lp-grid-2 {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1.1fr);
+  gap: 16px;
+}
+
+@media (max-width: 900px) {
+  .lp-grid-2 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* сетка для групп */
+
+/* Группы идут одной колонкой, каждая на всю ширину */
+.lp-groups-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+
+/* ==== CARDS ==== */
+
+.lp-card {
+  background:
+    radial-gradient(circle at top left, #1b1b1b, #080808 55%),
+    linear-gradient(160deg, rgba(255, 211, 0, 0.04), transparent 60%);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-soft);
+  box-shadow: var(--shadow-soft);
+  padding: 16px 18px;
+  margin-bottom: 16px;
+  position: relative;
+  overflow: hidden;
+  transition:
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+.lp-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.8);
+  border-color: rgba(255, 211, 0, 0.35);
+}
+
+/* опциональная «важная» карточка */
+.lp-card--highlight::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(to bottom, var(--accent-strong), transparent);
+  opacity: 0.9;
+}
+
+.lp-card-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: baseline;
+}
+
+.lp-card-title {
+  font-size: 1.05rem;
+  margin: 0 0 4px;
+}
+
+.lp-card-subtitle {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.lp-card-section-title {
+  font-size: 0.9rem;
+  margin: 10px 0 6px;
+  color: var(--text-muted);
+}
+
+/* ==== PILL / BADGE ==== */
+
+.lp-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  border: 1px solid var(--border-soft);
+  background: #141414;
+  gap: 6px;
+  color: var(--text-muted);
+}
+
+.lp-pill-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.lp-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.lp-badge-gray {
+  background: var(--pill-gray);
+  color: var(--text-muted);
+  border-color: var(--border-soft);
+}
+
+.lp-badge-group {
+  background: var(--pill-group);
+  color: #bfdeff;
+  border-color: rgba(112, 160, 211, 0.6);
+}
+
+.lp-badge-masters {
+  background: var(--pill-masters);
+  color: #ffe78a;
+  border-color: rgba(255, 215, 80, 0.7);
+}
+
+.lp-badge-challenge {
+  background: var(--pill-challenge);
+  color: #ffb8b8;
+  border-color: rgba(255, 120, 120, 0.7);
+}
+
+.lp-badge-status-open {
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  border-color: rgba(255, 211, 0, 0.7);
+}
+
+/* ==== BUTTONS & INPUTS ==== */
+
+.lp-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-size: 0.85rem;
+  cursor: pointer;
+  background: var(--pill-gray);
+  color: var(--text-main);
+  transition:
+    var(--transition-fast),
+    transform var(--transition-fast);
+  gap: 6px;
+}
+
+.lp-btn-sm {
+  padding: 5px 10px;
+  font-size: 0.8rem;
+}
+
+.lp-btn-primary {
+  background: linear-gradient(120deg, var(--accent), var(--accent-strong));
+  color: #000;
+  font-weight: 600;
+}
+
+.lp-btn-primary:hover {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+}
+
+.lp-btn-outline {
+  background: transparent;
+  border-color: var(--border-soft);
+}
+
+.lp-btn-outline:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.lp-btn-danger {
+  background: var(--danger-soft);
+  border-color: rgba(255, 82, 82, 0.6);
+  color: #ffb7b7;
+}
+
+.lp-btn-danger:hover {
+  background: rgba(255, 82, 82, 0.24);
+}
+
+.lp-btn:active {
+  transform: scale(0.97);
+}
+
+.lp-input,
+.lp-select {
+  width: 100%;
+  padding: 7px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--border-soft);
+  background: #080808;
+  color: var(--text-main);
+  font-size: 0.85rem;
+}
+
+.lp-input::placeholder {
+  color: var(--text-muted);
+}
+
+.lp-input-inline {
+  width: 100%;
+  padding: 5px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--border-soft);
+  background: #050505;
+  color: var(--text-main);
+  font-size: 0.8rem;
+}
+
+.lp-input-score {
+  width: 46px;
+  text-align: center;
+}
+
+/* ==== TABLES ==== */
+
+.lp-table-scroll {
+  width: 100%;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  -webkit-overflow-scrolling: touch;
+  position: relative; /* нужно для sticky */
+}
+
+.lp-table-scroll::-webkit-scrollbar {
+  height: 6px;
+}
+
+.lp-table-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.lp-table-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+}
+
+.lp-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+  margin-top: 4px;
+  min-width: 580px;
+}
+
+.lp-table th,
+.lp-table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  /* единый непрозрачный фон для всех ячеек */
+  background-color: var(--table-row-bg);
+}
+
+.lp-table th {
+  text-align: left;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.lp-table tbody tr:hover td {
+  background-color: #080808;
+}
+
+/* подчёркиваем очки только в таблицах групп */
+.lp-group-card .lp-table tbody td:last-child {
+  font-weight: 600;
+}
+
+
+/* Подсветка двух лучших в группе */
+
+.lp-table-row-highlight td {
+  background-color: var(--table-row-bg);
+  background-image: radial-gradient(
+    circle at left,
+    rgba(255, 211, 0, 0.24) 0,
+    rgba(255, 211, 0, 0.18) 30%,
+    #080808 80%
+  );
+  background-repeat: no-repeat;
+  transition: background 0.3s ease-out, color 0.3s ease-out;
+}
+
+.lp-table-row-highlight td:first-child {
+  position: relative;
+}
+
+.lp-table-row-highlight td:first-child::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 6px;
+  bottom: 6px;
+  width: 3px;
+  border-radius: 999px;
+  background: var(--accent);
+}
+
+.lp-table-row-highlight:hover td {
+  background-image: radial-gradient(
+    circle at left,
+    rgba(255, 211, 0, 0.32) 0,
+    rgba(255, 211, 0, 0.24) 30%,
+    #080808 80%
+  );
+}
+
+@media (max-width: 768px) {
+  .lp-table {
+    min-width: 520px;
+  }
+}
+
+/* ==== УЛУЧШЕННАЯ ТАБЛИЦА УЧАСТНИКОВ ==== */
+
+.lp-table-participants tr td {
+  position: relative;
+}
+
+.lp-table-participants tr:nth-child(odd) td {
+  background-color: #070707;
+}
+
+.lp-table-participants tr:nth-child(even) td {
+  background-color: #050505;
+}
+
+.lp-table-participants tbody tr:hover td {
+  border-bottom-color: rgba(255, 211, 0, 0.35);
+}
+
+/* индикатор слева, если есть результат */
+
+.lp-table-participants td:last-child:not(:empty)::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 6px;
+  bottom: 6px;
+  width: 2px;
+  border-radius: 999px;
+  background: linear-gradient(to bottom, var(--accent-strong), transparent);
+  opacity: 0.8;
+}
+
+/* медалька в участниках */
+
+.lp-medal {
+  font-size: 1rem;
+  margin-right: 4px;
+  filter: drop-shadow(0 0 4px rgba(255, 211, 0, 0.7));
+}
+
+/* ==== GROUP CARDS ==== */
+
+.lp-group-card {
+  margin: 16px 0;
+  padding: 14px 16px 18px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.lp-group-header-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.lp-group-name {
+  font-weight: 600;
+}
+
+.lp-group-note {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+/* ==== BRACKETS (общие стили) ==== */
+
+.lp-brackets-wrapper {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+
+/* область плей-офф: только горизонтальный скролл внутри */
+
+.lp-bracket {
+  margin-top: 6px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.lp-bracket-inner {
+  display: flex;
+  gap: 14px;
+  align-items: stretch;
+  min-width: max-content;
+}
+
+.lp-bracket-round {
+  min-width: 160px;
+}
+
+.lp-bracket-round-title {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.lp-bracket-match {
+  border-radius: 14px;
+  border: 1px solid var(--border-soft);
+  background: #050505;
+  padding: 8px 10px;
+  margin-bottom: 8px;
+  font-size: 0.78rem;
+  transition:
+    transform var(--transition-fast),
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.lp-bracket-match:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255, 211, 0, 0.45);
+  box-shadow: 0 0 20px rgba(255, 211, 0, 0.12);
+}
+
+.lp-bracket-match-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.lp-bracket-player-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.lp-bracket-player-name {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lp-bracket-player-score {
+  min-width: 24px;
+  text-align: right;
+}
+
+/* Победитель пары в плей-офф */
+.lp-bracket-player--winner {
+  color: var(--accent-strong);
+  font-weight: 600;
+  background: rgba(255, 211, 0, 0.10);
+  border-radius: 8px;
+  padding: 1px 4px;
+  text-shadow: 0 0 6px rgba(255, 211, 0, 0.5);
+}
+
+/* ==== PLAYOFFS LAYOUT + ПЬЕДЕСТАЛЫ ==== */
+
+.lp-playoffs-grid {
+  display: flex;
+  flex-direction: column; /* Кубок мастеров и Кубок вызова друг под другом */
+  gap: 18px;
+  align-items: stretch;
+  margin-top: 10px;
+}
+
+.lp-playoffs-block {
+  border-radius: 16px;
+  padding: 10px 12px 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.55);
+}
+
+.lp-playoffs-brackets {
+  flex: 2 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.lp-playoffs-podium {
+  flex: 1 1 260px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+@media (max-width: 960px) {
+  .lp-playoffs-podium {
+    width: 100%;
+  }
+}
+
+/* Блок-пьедестал */
+
+.lp-podium-block {
+  margin-top: 10px;
+  border-radius: 16px;
+  background: radial-gradient(
+    circle at top,
+    rgba(255, 211, 0, 0.12),
+    rgba(0, 0, 0, 0.86)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 12px 14px 14px;
+  transition:
+    box-shadow var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+.lp-podium-block:hover {
+  box-shadow: 0 0 40px rgba(255, 211, 0, 0.25);
+  border-color: rgba(255, 211, 0, 0.5);
+}
+
+/* Пьедестал 1–2–3 место */
+
+.lp-podium {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.lp-podium-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  background: rgba(0, 0, 0, 0.7);
+  border-radius: 12px 12px 6px 6px;
+  padding: 4px 4px 8px;
+}
+
+.lp-podium-1 {
+  min-height: 110px;
+}
+
+.lp-podium-2 {
+  min-height: 95px;
+}
+
+.lp-podium-3 {
+  min-height: 90px;
+}
+
+.lp-podium-medal {
+  font-size: 26px;
+  line-height: 1;
+}
+
+/* анимация золотой медали */
+.lp-podium-medal--gold {
+  animation: lp-gold-pulse 2s ease-in-out infinite;
+}
+
+@keyframes lp-gold-pulse {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+    text-shadow: 0 0 4px rgba(255, 211, 0, 0.5);
+  }
+  50% {
+    transform: translateY(-2px) scale(1.05);
+    text-shadow: 0 0 10px rgba(255, 211, 0, 0.9);
+  }
+}
+
+.lp-podium-place {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.lp-podium-name {
+  font-size: 13px;
+  font-weight: 600;
+  margin-top: 2px;
+  text-align: center;
+  padding: 2px 4px 0;
+}
+
+/* ==== CHIPS / FILTERS ==== */
+
+.lp-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 4px 0 0;
+}
+
+.lp-chip {
+  font-size: 0.78rem;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border-soft);
+  background: #050505;
+  color: var(--text-muted);
+  cursor: pointer;
+  user-select: none;
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast),
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.lp-chip--active {
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  border-color: rgba(255, 211, 0, 0.7);
+  transform: translateY(-1px);
+  box-shadow: 0 0 12px rgba(255, 211, 0, 0.35);
+}
+
+.lp-chip:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* ==== FLEX HELPERS ==== */
+
+.lp-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.lp-row-right {
+  margin-left: auto;
+}
+
+.lp-spacer {
+  flex: 1;
+}
+
+/* ==== TEXT HELPERS ==== */
+
+.lp-text-muted {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.lp-text-xs {
+  font-size: 0.75rem;
+}
+
+/* ==== STATUS CELL ==== */
+
+.lp-status-cell {
+  white-space: nowrap;
+}
+
+/* ==== SEPARATOR ==== */
+
+.lp-separator {
+  margin: 16px 0 12px;
+  border-top: 1px dashed rgba(255, 255, 255, 0.12);
+}
+
+/* ==== RESPONSIVE TWEAKS ==== */
+
+@media (max-width: 600px) {
+  .lp-card {
+    padding: 14px 12px;
+  }
+
+  .lp-header-inner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .lp-nav {
+    align-self: stretch;
+  }
+
+  .lp-nav-link {
+    flex: 1;
+    text-align: center;
+  }
+
+  .lp-card-title {
+    font-size: 0.98rem;
+  }
+
+  .lp-table {
+    font-size: 0.76rem;
+  }
+
+  .lp-podium-name {
+    font-size: 12px;
+  }
+
+  .lp-chip {
+    padding: 3px 8px;
+    font-size: 0.72rem;
+  }
+
+  .lp-section-nav {
+    top: 72px;
+    padding-inline: 12px;
+  }
+}
+
+/* ==== КОМПАКТНЫЕ МАТЧИ В ГРУППАХ ==== */
+
+.lp-matches-list {
+  margin-top: 4px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  display: inline-grid;
+  grid-template-columns: max-content auto max-content;
+  grid-auto-rows: auto;
+  column-gap: 8px;
+  row-gap: 2px;
+  padding: 2px 6px;
+  max-width: 100%;
+  -webkit-overflow-scrolling: touch;
+}
+
+.lp-match-row {
+  display: contents;
+}
+
+.lp-match-player {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 12px;
+  line-height: 1.3;
+  padding: 2px 0;
+}
+
+.lp-match-player--left {
+  text-align: left;
+}
+
+.lp-match-player--right {
+  text-align: right;
+}
+
+.lp-match-score {
+  justify-self: center;
+  align-self: center;
+  min-width: 34px;
+  text-align: center;
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 2px 8px;
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 12px;
+  position: relative;
+}
+
+.lp-match-row:not(:last-child) .lp-match-score::after {
+  content: "";
+  position: absolute;
+  left: -9999px;
+  right: -9999px;
+  bottom: -2px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.lp-match-score.lp-text-muted {
+  opacity: 0.5;
+  font-weight: 400;
+  background: transparent;
+}
+
+.lp-match-winner {
+  color: var(--accent-strong);
+  font-weight: 600;
+  text-shadow: 0 0 6px rgba(255, 211, 0, 0.6);
+}
+
+/* ==== ЗАКРЕПЛЁННОЕ ИМЯ ИГРОКА В ТАБЛИЦЕ ==== */
+
+/* таблички, где нужно фиксировать первую колонку */
+.lp-table--sticky-name {
+  border-collapse: separate;
+}
+
+/* первая колонка (имя) — тот же фон, что и у остальных ячеек, но непрозрачный */
+.lp-table--sticky-name th:first-child,
+.lp-table--sticky-name td:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background-color: var(--table-row-bg);
+}
+
+/* верхний заголовок поверх данных */
+.lp-table--sticky-name th:first-child {
+  z-index: 3;
+}
+
+/* подсветка топ-2 в группах, когда первый столбец закреплён */
+.lp-table--sticky-name .lp-table-row-highlight td:first-child {
+  background-color: var(--table-row-bg);
+  background-image: radial-gradient(
+    circle at left,
+    rgba(255, 211, 0, 0.24) 0,
+    rgba(255, 211, 0, 0.18) 30%,
+    #080808 80%
+  );
+  background-repeat: no-repeat;
+}

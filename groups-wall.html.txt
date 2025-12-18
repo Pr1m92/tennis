@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Группы — Стена результатов</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+
+  <link rel="stylesheet" href="styles.css?v=1002" />
+  <link rel="stylesheet" href="groups-wall.css?v=1002" />
+</head>
+
+<body class="wall wall-cols-3">
+  <!-- мини-панель -->
+  <div class="wall-toolbar">
+    <button id="export-png" class="wall-fab" title="Скачать PNG (P)">PNG</button>
+  </div>
+
+  <main class="wall-root">
+    <div class="loading">Загрузка…</div>
+    <div id="groups-container"></div>
+  </main>
+
+  <!-- библиотека для экспорта в PNG -->
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+  <script type="module" src="groups-wall.js?v=1002"></script>
+</body>
+</html>

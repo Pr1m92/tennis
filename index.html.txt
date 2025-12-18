@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Турнир по настольному теннису · ЛеманаПро Саратов</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- запрет кеширования, чтобы правки всегда подхватывались -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+
+  <!-- базовое описание и цвет темы для мобильного статус-бара -->
+  <meta name="description" content="Корпоративный турнир по настольному теннису магазина «ЛеманаПро Саратов». Регистрация, группы, плей-офф и результаты." />
+  <meta name="theme-color" content="#050505" />
+
+  <!-- версия стилей увеличена, чтобы сбросить кеш после обновлений -->
+  <link rel="stylesheet" href="styles.css?v=4" />
+</head>
+<body data-page="public">
+  <header class="lp-header">
+    <div class="lp-header-inner">
+      <div>
+        <h1 class="lp-title">Корпоративный турнир по&nbsp;настольному теннису</h1>
+        <p class="lp-subtitle">Магазин «ЛеманаПро Саратов»</p>
+      </div>
+
+      <nav class="lp-nav">
+        <!-- пока одна вкладка, но визуально как таб -->
+        <span class="lp-nav-link lp-nav-link--active">
+          Регистрация и результаты
+        </span>
+      </nav>
+    </div>
+  </header>
+
+  <main class="lp-main">
+    <!-- внутренний контейнер, чтобы на широких экранах контент был собран -->
+    <div class="lp-main-inner">
+      <div id="public-root">
+        <div class="lp-loading" aria-live="polite">
+          Загрузка турнира…
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="lp-footer">
+    <span>ЛеманаПро Саратов · Настольный теннис</span>
+  </footer>
+
+  <!-- версия скрипта тоже поднята для обновлений -->
+  <script type="module" src="tournament.js?v=4"></script>
+</body>
+</html>

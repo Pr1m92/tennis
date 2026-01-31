@@ -2453,9 +2453,8 @@ function renderAdminBracket(bracket, playersMap, bracketType) {
       const s2 = match.score2 != null ? match.score2 : "";
 
       const canEditPlayers =
-        bracketPlayers.length > 0 &&
-        match.score1 == null &&
-        match.score2 == null;
+        bracketPlayers.length > 0;
+
 
       let player1Control = `<span class="lp-bracket-player-name">${name1}</span>`;
       let player2Control = `<span class="lp-bracket-player-name">${name2}</span>`;
@@ -3281,39 +3280,27 @@ function handleSavePlayoffMatch(bracketType, roundId, matchId) {
 
 function handleSetPlayoffPlayer(bracketType, matchId, slot, playerId) {
   if (!adminEditingTournamentId) return;
+  const t = getTournamentById(currentState, adminEditingTournamentId);
+  if (!t) return;
 
-  updateState((state) => {
-    const tour = getTournamentById(state, adminEditingTournamentId);
-    if (!tour || !tour.playoffs) return;
+  const bracketKey =
+    bracketType === "masters" ? "mastersBracket" : "challengeBracket";
+  const bracket = t.playoffs[bracketKey];
+  if (!bracket) return;
 
-    const b =
-      bracketType === "masters"
-        ? tour.playoffs.mastersBracket
-        : tour.playoffs.challengeBracket;
-    if (!b || !Array.isArray(b.rounds)) return;
+  const match = bracket.matches.find((m) => m.id === matchId);
+  if (!match) return;
 
-    let foundMatch = null;
-    for (const round of b.rounds) {
-      const m = (round.matches || []).find((x) => x.id === matchId);
-      if (m) {
-        foundMatch = m;
-        break;
-      }
-    }
-    if (!foundMatch) return;
+  if (slot === "p1") {
+    match.player1Id = playerId || null;
+  } else if (slot === "p2") {
+    match.player2Id = playerId || null;
+  }
 
-    // ⚠️ Разрешаем менять пары даже если в других матчах уже есть результаты.
-    // Селекты для игроков всё равно рисуются только там, где нет счёта,
-    // так что уже сыгранные матчи не трогаем.
-
-    if (slot === "p1") {
-      foundMatch.player1Id = playerId || null;
-    } else if (slot === "p2") {
-      foundMatch.player2Id = playerId || null;
-    }
-  });
+  ensureTournament(t);
+  upsertTournamentInternal(t);
+  buildUi();
 }
-
 
 // ---------------------
 // Инициализация
@@ -3356,4 +3343,5 @@ function render() {
 }
 
 document.addEventListener("DOMContentLoaded", init);
+
 

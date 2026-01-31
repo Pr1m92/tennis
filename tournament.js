@@ -3281,24 +3281,16 @@ function handleSavePlayoffMatch(bracketType, roundId, matchId) {
 
 function handleSetPlayoffPlayer(bracketType, matchId, slot, playerId) {
   if (!adminEditingTournamentId) return;
-  const t = getTournamentById(currentState, adminEditingTournamentId);
-  if (!t) return;
-
-  if (hasPlayoffResults(t)) {
-    alert(
-      "Нельзя редактировать сетку: уже есть сыгранные матчи плей-офф. Сначала сбросьте результаты плей-офф."
-    );
-    return;
-  }
 
   updateState((state) => {
     const tour = getTournamentById(state, adminEditingTournamentId);
-    if (!tour) return;
+    if (!tour || !tour.playoffs) return;
+
     const b =
       bracketType === "masters"
         ? tour.playoffs.mastersBracket
         : tour.playoffs.challengeBracket;
-    if (!b || !b.rounds) return;
+    if (!b || !Array.isArray(b.rounds)) return;
 
     let foundMatch = null;
     for (const round of b.rounds) {
@@ -3310,6 +3302,10 @@ function handleSetPlayoffPlayer(bracketType, matchId, slot, playerId) {
     }
     if (!foundMatch) return;
 
+    // ⚠️ Разрешаем менять пары даже если в других матчах уже есть результаты.
+    // Селекты для игроков всё равно рисуются только там, где нет счёта,
+    // так что уже сыгранные матчи не трогаем.
+
     if (slot === "p1") {
       foundMatch.player1Id = playerId || null;
     } else if (slot === "p2") {
@@ -3317,6 +3313,7 @@ function handleSetPlayoffPlayer(bracketType, matchId, slot, playerId) {
     }
   });
 }
+
 
 // ---------------------
 // Инициализация
@@ -3359,3 +3356,4 @@ function render() {
 }
 
 document.addEventListener("DOMContentLoaded", init);
+

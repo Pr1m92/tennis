@@ -803,7 +803,7 @@ function assignPlayersToBracket(bracket, players) {
     match.player2Id = slot.p2 || null;
     // НИКАКИХ autoAdvanceWinnerInBracket здесь больше нет
   }
-
+} // ← вот этого не хватает
 
 function applyPlayoffResultToBracket(bracket, match, winnerId, loserId) {
   if (match.nextMatchId && match.nextSlot) {
@@ -3357,6 +3357,7 @@ function render() {
 }
 
 document.addEventListener("DOMContentLoaded", init);
+
 
 
 

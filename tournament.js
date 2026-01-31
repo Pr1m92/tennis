@@ -794,22 +794,16 @@ function assignPlayersToBracket(bracket, players) {
       }
     }
   }
-
-  // --- 4. Переносим в матчи и запускаем автопроход BYE ---
+  // --- 4. Переносим в матчи БЕЗ какого-либо автопродвижения ---
   for (let i = 0; i < firstRound.matches.length; i++) {
     const match = firstRound.matches[i];
     const slot = matchesSlots[i];
 
     match.player1Id = slot.p1 || null;
     match.player2Id = slot.p2 || null;
-
-    if (match.player1Id && !match.player2Id) {
-      autoAdvanceWinnerInBracket(bracket, match, match.player1Id);
-    } else if (!match.player1Id && match.player2Id) {
-      autoAdvanceWinnerInBracket(bracket, match, match.player2Id);
-    }
+    // НИКАКИХ autoAdvanceWinnerInBracket здесь больше нет
   }
-}
+
 
 function applyPlayoffResultToBracket(bracket, match, winnerId, loserId) {
   if (match.nextMatchId && match.nextSlot) {
@@ -3282,27 +3276,45 @@ function handleSavePlayoffMatch(bracketType, roundId, matchId) {
 
 function handleSetPlayoffPlayer(bracketType, matchId, slot, playerId) {
   if (!adminEditingTournamentId) return;
-  const t = getTournamentById(currentState, adminEditingTournamentId);
-  if (!t) return;
 
-  const bracketKey =
-    bracketType === "masters" ? "mastersBracket" : "challengeBracket";
-  const bracket = t.playoffs[bracketKey];
-  if (!bracket) return;
+  updateState((state) => {
+    const tour = getTournamentById(state, adminEditingTournamentId);
+    if (!tour || !tour.playoffs) return;
 
-  const match = bracket.matches.find((m) => m.id === matchId);
-  if (!match) return;
+    const bracketKey =
+      bracketType === "masters" ? "mastersBracket" : "challengeBracket";
+    const bracket = tour.playoffs[bracketKey];
+    if (!bracket || !Array.isArray(bracket.rounds)) return;
 
-  if (slot === "p1") {
-    match.player1Id = playerId || null;
-  } else if (slot === "p2") {
-    match.player2Id = playerId || null;
-  }
+    // Ищем матч внутри всех раундов
+    let targetMatch = null;
+    for (const round of bracket.rounds) {
+      const found = (round.matches || []).find((m) => m.id === matchId);
+      if (found) {
+        targetMatch = found;
+        break;
+      }
+    }
+    if (!targetMatch) return;
 
-  ensureTournament(t);
-  upsertTournamentInternal(t);
-  buildUi();
+    // Меняем игрока в нужном слоте
+    if (slot === "p1") {
+      targetMatch.player1Id = playerId || null;
+    } else if (slot === "p2") {
+      targetMatch.player2Id = playerId || null;
+    }
+
+    // Чтобы не висел старый счёт на новых парах — обнуляем его
+    targetMatch.score1 = null;
+    targetMatch.score2 = null;
+
+    // И удаляем старую запись из истории, если была
+    tour.history = (tour.history || []).filter(
+      (h) => h.matchId !== targetMatch.id
+    );
+  });
 }
+
 
 // ---------------------
 // Инициализация
@@ -3345,6 +3357,7 @@ function render() {
 }
 
 document.addEventListener("DOMContentLoaded", init);
+
 
 
 

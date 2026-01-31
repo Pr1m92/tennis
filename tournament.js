@@ -3244,7 +3244,9 @@ function handleSavePlayoffMatch(bracketType, roundId, matchId) {
     );
     if (!res) return;
 
-    applyPlayoffResultToBracket(b, foundMatch, res.winnerId, res.loserId);
+    // Автоматическое продвижение по сетке отключено:
+    // администратор сам вручную расставляет пары в следующих раундах
+    // с помощью выпадающих списков на странице админ-панели.
 
     const p1 = tour.players.find((p) => p.id === foundMatch.player1Id);
     const p2 = tour.players.find((p) => p.id === foundMatch.player2Id);
@@ -3343,5 +3345,6 @@ function render() {
 }
 
 document.addEventListener("DOMContentLoaded", init);
+
 
 

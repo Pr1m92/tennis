@@ -40,6 +40,51 @@ body.po-wall {
   min-width: 0;
 }
 
+/* cup switch */
+.po-switch {
+  display: inline-flex;
+  gap: 6px;
+  padding: 6px;
+  border-radius: 16px;
+  border: 1px solid var(--border-soft);
+  background: rgba(0,0,0,0.28);
+  box-shadow: 0 12px 26px rgba(0,0,0,0.35);
+}
+
+.po-switch-btn {
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  cursor: pointer;
+  transition: transform var(--transition-fast), background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast), filter var(--transition-fast);
+  white-space: nowrap;
+}
+
+.po-switch-btn:hover {
+  transform: translateY(-1px);
+  color: var(--text-main);
+  filter: brightness(1.08);
+}
+
+.po-switch-btn.is-active,
+.po-switch-btn[aria-selected="true"] {
+  background: radial-gradient(circle at top, rgba(255,211,0,0.22), rgba(17,17,17,0.72));
+  border-color: rgba(255,211,0,0.55);
+  color: var(--text-main);
+  box-shadow: 0 0 0 6px rgba(255,211,0,0.06);
+}
+
+/* на маленьких экранах убираем длинную подсказку */
+@media (max-width: 720px) {
+  .po-mini-hint { display: none; }
+}
+
 .po-mini-link {
   width: 34px;
   height: 34px;

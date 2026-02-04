@@ -1,41 +1,30 @@
 /* playoffs-wall.css */
-/* Общая прокрутка страницы по X (body). Сетка плей-офф всегда в один ряд, без наездов. */
+/* Скролл НЕ у страницы, а внутри сетки каждого кубка (po-bracket). */
 
-:root{
+:root {
   --po-zoom: 1;
   --po-gap: 14px;
 
+  /* мастера — золото */
   --po-m-glow: rgba(255, 211, 0, 0.22);
   --po-m-win: rgba(255, 211, 0, 0.28);
   --po-m-win-soft: rgba(255, 211, 0, 0.08);
 
+  /* вызов — холодный неон (чтобы не конфликтовал с базовым жёлтым) */
   --po-c-glow: rgba(80, 170, 255, 0.18);
   --po-c-win: rgba(80, 170, 255, 0.30);
   --po-c-win-soft: rgba(80, 170, 255, 0.08);
 }
 
-/* ВАЖНО: общая прокрутка страницы */
-body.po-wall{
-  min-height:100%;
-  overflow-x: auto;   /* <-- вот она */
+/* page: запрет глобального горизонтального скролла */
+body.po-wall {
+  min-height: 100%;
+  overflow-x: hidden;
   overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255,255,255,0.18) rgba(0,0,0,0.25);
-}
-body.po-wall::-webkit-scrollbar{ height: 12px; width: 12px; }
-body.po-wall::-webkit-scrollbar-track{
-  background: rgba(0,0,0,0.25);
-}
-body.po-wall::-webkit-scrollbar-thumb{
-  background: rgba(255,255,255,0.18);
-  border-radius: 999px;
-}
-body.po-wall::-webkit-scrollbar-thumb:hover{
-  background: rgba(255,255,255,0.26);
 }
 
 /* toolbar */
-.po-toolbar{
+.po-toolbar {
   position: sticky;
   top: 0;
   z-index: 1000;
@@ -49,85 +38,83 @@ body.po-wall::-webkit-scrollbar-thumb:hover{
   border-bottom: 1px solid var(--border-soft);
 }
 
-.po-toolbar-left{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  min-width:0;
+.po-toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
 }
 
-.po-switch{
-  display:inline-flex;
-  gap:6px;
-  padding:6px;
-  border-radius:16px;
-  border:1px solid var(--border-soft);
+.po-switch {
+  display: inline-flex;
+  gap: 6px;
+  padding: 6px;
+  border-radius: 16px;
+  border: 1px solid var(--border-soft);
   background: rgba(0,0,0,0.28);
   box-shadow: 0 12px 26px rgba(0,0,0,0.35);
 }
 
-.po-switch-btn{
-  height:30px;
-  padding:0 10px;
-  border-radius:12px;
-  border:1px solid transparent;
+.po-switch-btn {
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 12px;
+  border: 1px solid transparent;
   background: transparent;
   color: var(--text-muted);
-  font-size:12px;
-  font-weight:800;
-  letter-spacing:0.2px;
-  cursor:pointer;
-  transition: transform var(--transition-fast), background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast), filter var(--transition-fast);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  cursor: pointer;
+  transition: transform var(--transition-fast), background var(--transition-fast),
+    color var(--transition-fast), border-color var(--transition-fast), filter var(--transition-fast);
   white-space: nowrap;
 }
-.po-switch-btn:hover{
+.po-switch-btn:hover {
   transform: translateY(-1px);
   color: var(--text-main);
   filter: brightness(1.08);
 }
 .po-switch-btn.is-active,
-.po-switch-btn[aria-selected="true"]{
+.po-switch-btn[aria-selected="true"] {
   background: radial-gradient(circle at top, rgba(255,211,0,0.22), rgba(17,17,17,0.72));
   border-color: rgba(255,211,0,0.55);
   color: var(--text-main);
   box-shadow: 0 0 0 6px rgba(255,211,0,0.06);
 }
 
-@media (max-width: 720px){
-  .po-mini-hint{ display:none; }
+@media (max-width: 720px) {
+  .po-mini-hint { display: none; }
 }
 
-.po-mini-link{
-  width:34px;
-  height:34px;
-  display:grid;
-  place-items:center;
-  border-radius:12px;
-  border:1px solid var(--border-soft);
+.po-mini-link {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  border: 1px solid var(--border-soft);
   color: var(--text-main);
-  text-decoration:none;
+  text-decoration: none;
   background: rgba(0,0,0,0.35);
   box-shadow: 0 10px 22px rgba(0,0,0,0.35);
   transition: transform var(--transition-fast), border-color var(--transition-fast);
 }
-.po-mini-link:hover{
-  transform: translateY(-1px);
-  border-color: rgba(255,255,255,0.18);
-}
+.po-mini-link:hover { transform: translateY(-1px); border-color: rgba(255,255,255,0.18); }
 
-.po-mini-hint{
-  font-size:12px;
+.po-mini-hint {
+  font-size: 12px;
   color: var(--text-muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.po-fab{
-  width:44px;
-  height:44px;
-  border-radius:14px;
-  border:1px solid rgba(255, 211, 0, 0.55);
+.po-fab {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 211, 0, 0.55);
   background: radial-gradient(circle at top, rgba(255,211,0,0.28), rgba(17,17,17,0.85));
   color: var(--text-main);
   font-weight: 800;
@@ -137,21 +124,19 @@ body.po-wall::-webkit-scrollbar-thumb:hover{
     0 0 0 6px rgba(255,211,0,0.08);
   transition: transform var(--transition-fast), filter var(--transition-fast);
 }
-.po-fab:hover{ transform: translateY(-1px); filter: brightness(1.08); }
+.po-fab:hover { transform: translateY(-1px); filter: brightness(1.08); }
 
 /* arena */
-.po-root{
-  /* ВАЖНО: делаем "ширину по контенту" */
-  display: block;
-  width: max-content;         /* <-- это заставляет страницу расширяться */
-  min-width: 1100px;          /* чтобы на маленьких не ломалось */
+.po-root {
+  width: 100%;
+  max-width: 1600px;         /* можно поднять до 1800 если хочешь шире */
   margin: 0 auto;
   padding: 14px 14px 60px;
   transform: scale(var(--po-zoom));
   transform-origin: top center;
 }
 
-.po-arena{
+.po-arena {
   position: relative;
   border-radius: 28px;
   border: 1px solid rgba(255,255,255,0.06);
@@ -165,27 +150,27 @@ body.po-wall::-webkit-scrollbar-thumb:hover{
 }
 
 /* hero */
-.po-hero{
+.po-hero {
   margin: 14px auto 6px;
   text-align: center;
   padding: 18px 12px 6px;
 }
-.po-hero-title{
+.po-hero-title {
   font-size: 32px;
   font-weight: 900;
   letter-spacing: 0.4px;
   text-shadow: 0 10px 28px rgba(0,0,0,0.55);
 }
-.po-hero-subtitle{
+.po-hero-subtitle {
   margin-top: 6px;
   font-size: 13px;
   color: var(--text-muted);
 }
 
 /* stage */
-.po-stage{ position:relative; height:24px; margin:10px auto 16px; }
-.po-stage-line{
-  position:absolute;
+.po-stage { position: relative; height: 24px; margin: 10px auto 16px; }
+.po-stage-line {
+  position: absolute;
   left: 10%;
   right: 10%;
   top: 10px;
@@ -193,7 +178,7 @@ body.po-wall::-webkit-scrollbar-thumb:hover{
   background: linear-gradient(90deg, transparent, rgba(255,211,0,0.35), transparent);
   box-shadow: 0 0 0 6px rgba(255,211,0,0.06);
 }
-.po-stage-line--soft{
+.po-stage-line--soft {
   top: 16px;
   height: 1px;
   opacity: 0.7;
@@ -201,26 +186,29 @@ body.po-wall::-webkit-scrollbar-thumb:hover{
   box-shadow: none;
 }
 
-/* cups grid */
-.po-grid{
+/* cups */
+.po-grid {
   display: grid;
   gap: var(--po-gap);
   grid-template-columns: 1fr;
   padding: 12px 12px 24px;
-  width: max-content;          /* <-- тоже по контенту */
 }
 
-@media (min-width: 1100px){
-  .po-grid[data-mode="both"]{
+@media (min-width: 1100px) {
+  .po-grid[data-mode="both"] {
     grid-template-columns: 1fr 1fr;
     align-items: start;
   }
 }
 
-.po-loading{ padding: 20px 12px; text-align:center; color: var(--text-muted); }
+.po-loading {
+  padding: 20px 12px;
+  text-align: center;
+  color: var(--text-muted);
+}
 
-/* cup */
-.po-cup{
+/* cup section */
+.po-cup {
   position: relative;
   border-radius: 22px;
   border: 1px solid rgba(255,255,255,0.09);
@@ -228,17 +216,19 @@ body.po-wall::-webkit-scrollbar-thumb:hover{
   box-shadow: 0 24px 60px rgba(0,0,0,0.55);
   overflow: hidden;
 
+  min-width: 0; /* важно для grid: чтобы не распирало весь layout */
+
   --cup-glow: var(--po-m-glow);
   --cup-win: var(--po-m-win);
   --cup-win-soft: var(--po-m-win-soft);
 }
-.po-cup--challenge{
+.po-cup--challenge {
   --cup-glow: var(--po-c-glow);
   --cup-win: var(--po-c-win);
   --cup-win-soft: var(--po-c-win-soft);
 }
 
-.po-cup::before{
+.po-cup::before {
   content: "";
   position: absolute;
   inset: -2px;
@@ -247,16 +237,16 @@ body.po-wall::-webkit-scrollbar-thumb:hover{
   background: radial-gradient(circle at 30% 0%, var(--cup-glow), transparent 55%);
 }
 
-.po-cup-header{
-  display:flex;
+.po-cup-header {
+  display: flex;
   align-items: baseline;
   justify-content: space-between;
   gap: 10px;
   padding: 16px 16px 10px;
   border-bottom: 1px solid rgba(255,255,255,0.06);
 }
-.po-cup-title{ font-weight: 900; letter-spacing: 0.3px; }
-.po-cup-chip{
+.po-cup-title { font-weight: 900; letter-spacing: 0.3px; }
+.po-cup-chip {
   font-size: 11px;
   padding: 6px 10px;
   border-radius: 999px;
@@ -267,14 +257,16 @@ body.po-wall::-webkit-scrollbar-thumb:hover{
 }
 
 /* podium */
-.po-podium-wrap{ padding: 12px 16px 0; }
-.po-podium{
-  display:grid;
+.po-podium-wrap { padding: 12px 16px 0; }
+
+.po-podium {
+  display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   gap: 10px;
   align-items: end;
 }
-.po-stand{
+
+.po-stand {
   border-radius: 16px;
   border: 1px solid rgba(255,255,255,0.10);
   background: linear-gradient(180deg, rgba(0,0,0,0.25), rgba(0,0,0,0.65));
@@ -283,18 +275,19 @@ body.po-wall::-webkit-scrollbar-thumb:hover{
   position: relative;
   overflow: hidden;
 }
-.po-stand::before{
-  content:"";
-  position:absolute;
-  inset:-1px;
+.po-stand::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
   background: radial-gradient(circle at 40% 0%, var(--cup-glow), transparent 60%);
   opacity: 0.85;
 }
-.po-stand--first{ min-height: 110px; }
-.po-stand--second{ min-height: 92px; }
-.po-stand--third{ min-height: 86px; }
 
-.po-stand-rank{
+.po-stand--first { min-height: 110px; }
+.po-stand--second { min-height: 92px; }
+.po-stand--third { min-height: 86px; }
+
+.po-stand-rank {
   position: relative;
   z-index: 1;
   font-weight: 900;
@@ -307,7 +300,8 @@ body.po-wall::-webkit-scrollbar-thumb:hover{
   border: 1px solid rgba(255,255,255,0.12);
   background: rgba(0,0,0,0.35);
 }
-.po-stand-name{
+
+.po-stand-name {
   position: relative;
   z-index: 1;
   margin-top: 10px;
@@ -316,24 +310,48 @@ body.po-wall::-webkit-scrollbar-thumb:hover{
   font-weight: 700;
   word-break: break-word;
 }
-.po-stand-sub{ position:relative; z-index:1; margin-top: 6px; font-size: 11px; color: var(--text-muted); }
-.po-podium-note{ margin-top: 8px; font-size: 11px; color: var(--text-muted); }
+.po-stand-sub {
+  position: relative;
+  z-index: 1;
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
 
-/* bracket */
-.po-bracket{ padding: 14px 16px 18px; }
+.po-podium-note {
+  margin-top: 8px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
 
-/* Сетка — всегда в одну строку */
-.po-bracket-grid{
+/* ===== ВОТ ГЛАВНОЕ: скролл внутри сетки каждого кубка ===== */
+.po-bracket {
+  padding: 14px 16px 18px;
+
+  overflow-x: auto;           /* <-- локальная прокрутка */
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.18) rgba(0,0,0,0.22);
+}
+.po-bracket::-webkit-scrollbar { height: 12px; }
+.po-bracket::-webkit-scrollbar-track { background: rgba(0,0,0,0.22); border-radius: 999px; }
+.po-bracket::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 999px; }
+.po-bracket::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.26); }
+
+/* сетка шире контейнера => скролл появится у .po-bracket */
+.po-bracket-grid {
   display: grid;
   grid-auto-flow: column;
   grid-auto-columns: 240px;
   gap: 12px;
   align-items: start;
-  width: max-content;         /* <-- ключ от наездов */
+
+  width: max-content;         /* <-- ширина по контенту, НО внутри po-bracket */
+  padding-bottom: 6px;
 }
 
-/* round */
-.po-round{
+.po-round {
   border-radius: 18px;
   border: 1px solid rgba(255,255,255,0.10);
   background: rgba(6, 8, 10, 0.74);
@@ -341,24 +359,25 @@ body.po-wall::-webkit-scrollbar-thumb:hover{
   box-shadow: 0 16px 34px rgba(0,0,0,0.45);
   padding: 12px;
 }
-.po-round-title{
+
+.po-round-title {
   font-size: 12px;
   color: var(--text-muted);
-  display:flex;
-  align-items:center;
+  display: flex;
+  align-items: center;
   justify-content: space-between;
   gap: 8px;
   margin-bottom: 10px;
 }
-.po-round-title b{ color: var(--text-main); }
+.po-round-title b { color: var(--text-main); }
 
-.po-round-badge{
-  display:inline-flex;
-  align-items:center;
-  gap:6px;
-  font-size:10px;
-  font-weight:900;
-  letter-spacing:0.2px;
+.po-round-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.2px;
   padding: 4px 8px;
   border-radius: 999px;
   border: 1px solid rgba(255,255,255,0.12);
@@ -367,16 +386,16 @@ body.po-wall::-webkit-scrollbar-thumb:hover{
   margin-bottom: 10px;
 }
 
-.po-round-matches{ display:block; }
+.po-round-matches { display: block; }
 
-/* 1/8 в две колонки */
-.po-round[data-layout="two-col"] .po-round-matches{
-  display:grid;
+/* 1/8 финала — две колонки ВНУТРИ раунда (уменьшает высоту) */
+.po-round[data-layout="two-col"] .po-round-matches {
+  display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
 }
 
-.po-match{
+.po-match {
   border-radius: 16px;
   border: 1px solid rgba(255,255,255,0.10);
   background: rgba(17,17,17,0.72);
@@ -384,17 +403,17 @@ body.po-wall::-webkit-scrollbar-thumb:hover{
   box-shadow: 0 14px 30px rgba(0,0,0,0.45);
   margin-bottom: 10px;
 }
-.po-match:last-child{ margin-bottom: 0; }
+.po-match:last-child { margin-bottom: 0; }
 
-.po-round[data-layout="two-col"] .po-match{
+.po-round[data-layout="two-col"] .po-match {
   margin: 0;
-  padding: 8px 8px 8px;
+  padding: 8px;
   border-radius: 14px;
 }
 
-.po-player{
-  display:flex;
-  align-items:center;
+.po-player {
+  display: flex;
+  align-items: center;
   justify-content: space-between;
   gap: 10px;
   padding: 6px 8px;
@@ -402,23 +421,23 @@ body.po-wall::-webkit-scrollbar-thumb:hover{
   border: 1px solid rgba(255,255,255,0.08);
   background: rgba(0,0,0,0.22);
 }
-.po-player + .po-player{ margin-top: 6px; }
+.po-player + .po-player { margin-top: 6px; }
 
-.po-round[data-layout="two-col"] .po-player{
+.po-round[data-layout="two-col"] .po-player {
   padding: 5px 7px;
   border-radius: 11px;
 }
 
-.po-player-name{
+.po-player-name {
   font-size: 12px;
   font-weight: 650;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.po-round[data-layout="two-col"] .po-player-name{ font-size: 11px; }
+.po-round[data-layout="two-col"] .po-player-name { font-size: 11px; }
 
-.po-player-tag{
+.po-player-tag {
   font-size: 10px;
   color: var(--text-muted);
   padding: 3px 8px;
@@ -427,17 +446,17 @@ body.po-wall::-webkit-scrollbar-thumb:hover{
   background: rgba(0,0,0,0.26);
   flex: 0 0 auto;
 }
-.po-round[data-layout="two-col"] .po-player-tag{
+.po-round[data-layout="two-col"] .po-player-tag {
   font-size: 9px;
   padding: 2px 7px;
 }
 
-.po-player--winner{
+.po-player--winner {
   border-color: var(--cup-win);
   box-shadow: 0 0 0 6px var(--cup-win-soft);
 }
 
-.po-score{
+.po-score {
   margin: 8px auto 0;
   width: fit-content;
   font-weight: 900;
@@ -448,13 +467,19 @@ body.po-wall::-webkit-scrollbar-thumb:hover{
   background: rgba(0,0,0,0.40);
   color: var(--text-main);
 }
-.po-round[data-layout="two-col"] .po-score{
+.po-round[data-layout="two-col"] .po-score {
   margin-top: 6px;
   font-size: 12px;
   padding: 5px 10px;
 }
 
-.po-score--empty{ color: var(--text-muted); }
-.po-empty{ padding: 18px 12px; text-align:center; color: var(--text-muted); font-size: 12px; }
+.po-score--empty { color: var(--text-muted); }
 
-.po-hidden{ display:none !important; }
+.po-empty {
+  padding: 18px 12px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.po-hidden { display: none !important; }

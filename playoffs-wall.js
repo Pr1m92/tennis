@@ -1,15 +1,5 @@
 // playoffs-wall.js
 // «Арена» плей-офф: Кубок мастеров / Кубок вызова. Экспорт в PNG.
-//
-// URL параметры:
-//   cup=masters|challenge|both (по умолчанию both)
-//   zoom=0.7..1.8
-//   pngScale=2..5
-//
-// Hotkeys:
-//   1 — masters, 2 — challenge, 0 — оба
-//   + / - — zoom
-//   P — export PNG
 
 import { subscribeToState, EMPTY_STATE } from "./firebase.js";
 
@@ -20,7 +10,6 @@ const subtitleEl = document.getElementById("po-subtitle");
 const switchButtons = Array.from(document.querySelectorAll(".po-switch-btn"));
 
 const params = new URLSearchParams(location.search);
-
 let lastRemoteState = null;
 
 function escapeHtml(str) {
@@ -53,53 +42,11 @@ function isValidScore(a, b) {
   return Number.isFinite(a) && Number.isFinite(b);
 }
 
-function getWinnerLoser(score1, score2, player1Id, player2Id) {
-  const a = Number(score1);
-  const b = Number(score2);
-  if (!isValidScore(a, b)) return null;
-  if (a > b) return { winnerId: player1Id, loserId: player2Id };
-  return { winnerId: player2Id, loserId: player1Id };
-}
-
 function getPlayerName(playersMap, id) {
   const p = playersMap.get(id);
   if (!p) return "—";
   const full = `${escapeHtml(p.firstName)} ${escapeHtml(p.lastName)}`.trim();
   return full || "—";
-}
-
-function extractWinnersFromBracket(bracket) {
-  if (!bracket || !Array.isArray(bracket.rounds) || !bracket.rounds.length) {
-    return { gold: null, silver: null, bronze: null };
-  }
-
-  const finalRound = bracket.rounds.find((r) => r.name === "Финал");
-  const thirdRound = bracket.rounds.find((r) => r.name === "Матч за 3-е место");
-
-  let gold = null;
-  let silver = null;
-  let bronze = null;
-
-  if (finalRound && finalRound.matches && finalRound.matches[0]) {
-    const m = finalRound.matches[0];
-    if (isValidScore(m.score1, m.score2)) {
-      const res = getWinnerLoser(m.score1, m.score2, m.player1Id, m.player2Id);
-      if (res) {
-        gold = res.winnerId;
-        silver = res.loserId;
-      }
-    }
-  }
-
-  if (thirdRound && thirdRound.matches && thirdRound.matches[0]) {
-    const m = thirdRound.matches[0];
-    if (isValidScore(m.score1, m.score2)) {
-      const res = getWinnerLoser(m.score1, m.score2, m.player1Id, m.player2Id);
-      if (res) bronze = res.winnerId;
-    }
-  }
-
-  return { gold, silver, bronze };
 }
 
 // --------------------
@@ -172,7 +119,7 @@ window.addEventListener("keydown", (e) => {
 });
 
 // --------------------
-// Export PNG
+// Export PNG (без большой шапки "Плей-офф")
 // --------------------
 async function exportPng() {
   if (!window.html2canvas) {
@@ -180,13 +127,12 @@ async function exportPng() {
     return;
   }
 
-  const wall = document.getElementById("po-root"); // оставляем фон/арену
+  const wall = document.getElementById("po-root");
   const toolbar = document.querySelector(".po-toolbar");
-  const hero = document.querySelector(".po-hero");   // ❗️большую шапку уберём на время экспорта
-  const stage = document.querySelector(".po-stage"); // ❗️линию сцены тоже уберём
+  const hero = document.querySelector(".po-hero");
+  const stage = document.querySelector(".po-stage");
   const cup = (params.get("cup") || "both").toLowerCase();
 
-  // запомним исходные стили
   const heroDisplay = hero ? hero.style.display : "";
   const stageDisplay = stage ? stage.style.display : "";
 
@@ -294,10 +240,7 @@ function renderCup({ bracket, playersMap, cupKey, title, subtitle }) {
   `;
   wrap.appendChild(header);
 
-  const podiumWrap = document.createElement("div");
-  podiumWrap.className = "po-podium-wrap";
-  podiumWrap.appendChild(renderPodium(bracket, playersMap));
-  wrap.appendChild(podiumWrap);
+  // ✅ ПЬЕДЕСТАЛЫ УБРАЛИ (вообще не рендерим)
 
   const bracketWrap = document.createElement("div");
   bracketWrap.className = "po-bracket";
@@ -305,39 +248,6 @@ function renderCup({ bracket, playersMap, cupKey, title, subtitle }) {
   wrap.appendChild(bracketWrap);
 
   return wrap;
-}
-
-function renderPodium(bracket, playersMap) {
-  const winners = extractWinnersFromBracket(bracket);
-  const goldName = winners.gold ? getPlayerName(playersMap, winners.gold) : "—";
-  const silverName = winners.silver ? getPlayerName(playersMap, winners.silver) : "—";
-  const bronzeName = winners.bronze ? getPlayerName(playersMap, winners.bronze) : "—";
-
-  const box = document.createElement("div");
-
-  // ✅ УБРАЛИ ПОДСКАЗКУ полностью
-  box.innerHTML = `
-    <div class="po-podium">
-      <div class="po-stand po-stand--second">
-        <div class="po-stand-rank">🥈 2</div>
-        <div class="po-stand-name">${silverName}</div>
-        <div class="po-stand-sub">${winners.silver ? "Финал" : "—"}</div>
-      </div>
-
-      <div class="po-stand po-stand--first">
-        <div class="po-stand-rank">🥇 1</div>
-        <div class="po-stand-name">${goldName}</div>
-        <div class="po-stand-sub">${winners.gold ? "Чемпион" : "—"}</div>
-      </div>
-
-      <div class="po-stand po-stand--third">
-        <div class="po-stand-rank">🥉 3</div>
-        <div class="po-stand-name">${bronzeName}</div>
-        <div class="po-stand-sub">${winners.bronze ? "Матч за 3-е" : "—"}</div>
-      </div>
-    </div>
-  `;
-  return box;
 }
 
 function renderBracket(bracket, playersMap, cupKey) {

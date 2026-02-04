@@ -38,7 +38,8 @@ function normalizeState(state) {
     ...structuredClone(EMPTY_STATE),
     ...s,
     tournaments: Array.isArray(s.tournaments) ? s.tournaments : [],
-    activeTournamentId: typeof s.activeTournamentId === "string" ? s.activeTournamentId : null,
+    activeTournamentId:
+      typeof s.activeTournamentId === "string" ? s.activeTournamentId : null,
   };
 }
 
@@ -114,7 +115,10 @@ function setParam(key, value) {
 }
 
 function applyFromUrl() {
-  const zoom = Math.max(0.7, Math.min(1.8, parseFloat(params.get("zoom") || "1") || 1));
+  const zoom = Math.max(
+    0.7,
+    Math.min(1.8, parseFloat(params.get("zoom") || "1") || 1)
+  );
   document.documentElement.style.setProperty("--po-zoom", String(zoom));
 
   const cup = (params.get("cup") || "both").toLowerCase();
@@ -176,15 +180,27 @@ async function exportPng() {
     return;
   }
 
-  const wall = document.getElementById("po-root");
+  const wall = document.getElementById("po-root"); // оставляем фон/арену
   const toolbar = document.querySelector(".po-toolbar");
+  const hero = document.querySelector(".po-hero");   // ❗️большую шапку уберём на время экспорта
+  const stage = document.querySelector(".po-stage"); // ❗️линию сцены тоже уберём
   const cup = (params.get("cup") || "both").toLowerCase();
+
+  // запомним исходные стили
+  const heroDisplay = hero ? hero.style.display : "";
+  const stageDisplay = stage ? stage.style.display : "";
 
   try {
     if (toolbar) toolbar.style.visibility = "hidden";
+    if (hero) hero.style.display = "none";
+    if (stage) stage.style.display = "none";
+
     await new Promise((r) => requestAnimationFrame(r));
 
-    const scale = Math.max(2, Math.min(5, parseFloat(params.get("pngScale") || "3") || 3));
+    const scale = Math.max(
+      2,
+      Math.min(5, parseFloat(params.get("pngScale") || "3") || 3)
+    );
 
     const canvas = await window.html2canvas(wall, {
       scale,
@@ -206,6 +222,8 @@ async function exportPng() {
     alert("Не получилось экспортировать PNG. Открой консоль (F12) — там будет причина.");
   } finally {
     if (toolbar) toolbar.style.visibility = "";
+    if (hero) hero.style.display = heroDisplay;
+    if (stage) stage.style.display = stageDisplay;
   }
 }
 
@@ -233,7 +251,6 @@ function render(stateRaw) {
   const challenge = po.challengeBracket || null;
 
   const cupMode = (params.get("cup") || "both").toLowerCase();
-
   const showMasters = cupMode === "both" || cupMode === "masters";
   const showChallenge = cupMode === "both" || cupMode === "challenge";
 
@@ -297,6 +314,8 @@ function renderPodium(bracket, playersMap) {
   const bronzeName = winners.bronze ? getPlayerName(playersMap, winners.bronze) : "—";
 
   const box = document.createElement("div");
+
+  // ✅ УБРАЛИ ПОДСКАЗКУ полностью
   box.innerHTML = `
     <div class="po-podium">
       <div class="po-stand po-stand--second">
@@ -316,10 +335,6 @@ function renderPodium(bracket, playersMap) {
         <div class="po-stand-name">${bronzeName}</div>
         <div class="po-stand-sub">${winners.bronze ? "Матч за 3-е" : "—"}</div>
       </div>
-    </div>
-
-    <div class="po-podium-note">
-      Подсказка: отдельная картинка — открой <b>?cup=masters</b> или <b>?cup=challenge</b> и жми <b>PNG</b>.
     </div>
   `;
   return box;
@@ -350,10 +365,11 @@ function renderBracket(bracket, playersMap, cupKey) {
     const col = document.createElement("div");
     col.className = "po-round";
 
-    // ✅ В Раунде 1 показываем ТОЛЬКО полные пары (как ты хотел раньше)
     const rawMatches = Array.isArray(r.matches) ? r.matches : [];
+
+    // ✅ Раунд 1: только полные пары
     const matches =
-      (r.name === "Раунд 1" || r.name === "Раунд 1 ") // на всякий
+      r.name === "Раунд 1" || r.name === "Раунд 1 "
         ? rawMatches.filter((m) => m?.player1Id && m?.player2Id)
         : rawMatches;
 
@@ -367,7 +383,6 @@ function renderBracket(bracket, playersMap, cupKey) {
       </div>
     `;
 
-    // маленький бейджик для визуальной ясности
     const badge = document.createElement("div");
     badge.className = "po-round-badge";
     badge.textContent =

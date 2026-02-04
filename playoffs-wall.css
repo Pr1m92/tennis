@@ -4,12 +4,22 @@
 :root {
   --po-zoom: 1;
   --po-gap: 18px;
+
+  /* базовые */
   --po-card: rgba(17, 17, 17, 0.92);
   --po-border: rgba(255, 255, 255, 0.09);
-  --po-glow: rgba(255, 211, 0, 0.22);
-  --po-glow-2: rgba(255, 211, 0, 0.12);
-  --po-spot: rgba(255, 211, 0, 0.14);
-  --po-spot-2: rgba(255, 255, 255, 0.08);
+
+  /* Мастера (золото) */
+  --po-m-glow: rgba(255, 211, 0, 0.22);
+  --po-m-glow-2: rgba(255, 211, 0, 0.12);
+  --po-m-win: rgba(255, 211, 0, 0.28);
+  --po-m-win-soft: rgba(255, 211, 0, 0.08);
+
+  /* Вызов (холодный неон) */
+  --po-c-glow: rgba(80, 170, 255, 0.18);
+  --po-c-glow-2: rgba(80, 170, 255, 0.09);
+  --po-c-win: rgba(80, 170, 255, 0.30);
+  --po-c-win-soft: rgba(80, 170, 255, 0.08);
 }
 
 /* page */
@@ -147,7 +157,7 @@ body.po-wall {
   overflow: hidden;
 }
 
-/* прожектора */
+/* прожектора (оставляем фирменные жёлтые — они "арена") */
 .po-arena::before,
 .po-arena::after {
   content: "";
@@ -248,17 +258,28 @@ body.po-wall {
   overflow: hidden;
 }
 
+/* по умолчанию — мастера */
+.po-cup {
+  --cup-glow: var(--po-m-glow);
+  --cup-glow-2: var(--po-m-glow-2);
+  --cup-win: var(--po-m-win);
+  --cup-win-soft: var(--po-m-win-soft);
+}
+
+.po-cup--challenge {
+  --cup-glow: var(--po-c-glow);
+  --cup-glow-2: var(--po-c-glow-2);
+  --cup-win: var(--po-c-win);
+  --cup-win-soft: var(--po-c-win-soft);
+}
+
 .po-cup::before {
   content: "";
   position: absolute;
   inset: -2px;
   pointer-events: none;
   opacity: 0.95;
-  background: radial-gradient(circle at 30% 0%, var(--po-glow), transparent 55%);
-}
-
-.po-cup--challenge::before {
-  background: radial-gradient(circle at 30% 0%, rgba(255,82,82,0.16), transparent 55%);
+  background: radial-gradient(circle at 30% 0%, var(--cup-glow), transparent 55%);
 }
 
 .po-cup-header {
@@ -309,11 +330,8 @@ body.po-wall {
   content: "";
   position: absolute;
   inset: -1px;
-  background: radial-gradient(circle at 40% 0%, rgba(255,211,0,0.20), transparent 60%);
+  background: radial-gradient(circle at 40% 0%, var(--cup-glow), transparent 60%);
   opacity: 0.85;
-}
-.po-cup--challenge .po-stand::before {
-  background: radial-gradient(circle at 40% 0%, rgba(255,82,82,0.16), transparent 60%);
 }
 
 .po-stand--first { min-height: 110px; }
@@ -433,12 +451,8 @@ body.po-wall {
 }
 
 .po-player--winner {
-  border-color: rgba(255,211,0,0.28);
-  box-shadow: 0 0 0 6px rgba(255,211,0,0.08);
-}
-.po-cup--challenge .po-player--winner {
-  border-color: rgba(255,82,82,0.28);
-  box-shadow: 0 0 0 6px rgba(255,82,82,0.08);
+  border-color: var(--cup-win);
+  box-shadow: 0 0 0 6px var(--cup-win-soft);
 }
 
 .po-score {

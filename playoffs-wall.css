@@ -1,8 +1,6 @@
 /* playoffs-wall.css */
-/* Прокрутка внутри каждого кубка (po-bracket).
-   1/8 финала — 2 колонки БЕЗ сжатия карточек.
-   Важно: grid-auto-columns = max-content, чтобы широкая 1/8 реально расширяла колонку,
-   и 1/4+ уезжали вправо (видны через прокрутку). */
+/* Плей-офф арена: один столбец матчей в каждом раунде.
+   Счёт НЕ снизу, а справа напротив каждого игрока (вертикально). */
 
 :root {
   --po-zoom: 1;
@@ -18,9 +16,8 @@
   --po-c-win: rgba(80, 170, 255, 0.30);
   --po-c-win-soft: rgba(80, 170, 255, 0.08);
 
-  /* размеры сетки */
-  --po-col: 240px;          /* ширина обычного раунда */
-  --po-col-16: 520px;       /* ширина 1/8 (две колонки матчей) */
+  /* размеры */
+  --po-col: 240px; /* ширина колонки раунда */
 }
 
 /* page */
@@ -52,6 +49,7 @@ body.po-wall {
   min-width: 0;
 }
 
+/* cup switch */
 .po-switch {
   display: inline-flex;
   gap: 6px;
@@ -77,11 +75,13 @@ body.po-wall {
     color var(--transition-fast), border-color var(--transition-fast), filter var(--transition-fast);
   white-space: nowrap;
 }
+
 .po-switch-btn:hover {
   transform: translateY(-1px);
   color: var(--text-main);
   filter: brightness(1.08);
 }
+
 .po-switch-btn.is-active,
 .po-switch-btn[aria-selected="true"] {
   background: radial-gradient(circle at top, rgba(255,211,0,0.22), rgba(17,17,17,0.72));
@@ -90,7 +90,9 @@ body.po-wall {
   box-shadow: 0 0 0 6px rgba(255,211,0,0.06);
 }
 
-@media (max-width: 720px) { .po-mini-hint { display: none; } }
+@media (max-width: 720px) {
+  .po-mini-hint { display: none; }
+}
 
 .po-mini-link {
   width: 34px;
@@ -154,12 +156,10 @@ body.po-wall {
   overflow: hidden;
 }
 
-/* hero */
 .po-hero { margin: 14px auto 6px; text-align: center; padding: 18px 12px 6px; }
 .po-hero-title { font-size: 32px; font-weight: 900; letter-spacing: 0.4px; text-shadow: 0 10px 28px rgba(0,0,0,0.55); }
 .po-hero-subtitle { margin-top: 6px; font-size: 13px; color: var(--text-muted); }
 
-/* stage */
 .po-stage { position: relative; height: 24px; margin: 10px auto 16px; }
 .po-stage-line {
   position: absolute;
@@ -178,7 +178,7 @@ body.po-wall {
   box-shadow: none;
 }
 
-/* cups */
+/* cups grid */
 .po-grid {
   display: grid;
   gap: var(--po-gap);
@@ -276,20 +276,11 @@ body.po-wall {
   border: 1px solid rgba(255,255,255,0.12);
   background: rgba(0,0,0,0.35);
 }
-
-.po-stand-name {
-  position: relative;
-  z-index: 1;
-  margin-top: 10px;
-  font-size: 13px;
-  line-height: 1.15;
-  font-weight: 700;
-  word-break: break-word;
-}
+.po-stand-name { position: relative; z-index: 1; margin-top: 10px; font-size: 13px; line-height: 1.15; font-weight: 700; word-break: break-word; }
 .po-stand-sub { position: relative; z-index: 1; margin-top: 6px; font-size: 11px; color: var(--text-muted); }
 .po-podium-note { margin-top: 8px; font-size: 11px; color: var(--text-muted); }
 
-/* bracket scroll INSIDE cup */
+/* bracket scroll inside cup */
 .po-bracket {
   padding: 14px 16px 18px;
   overflow-x: auto;
@@ -303,9 +294,6 @@ body.po-wall {
 .po-bracket::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 999px; }
 .po-bracket::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.26); }
 
-/* 🔥 КЛЮЧЕВОЕ ИЗМЕНЕНИЕ:
-   max-content => каждая колонка берет ширину своего .po-round.
-   Тогда 1/8 станет шире и сдвинет 1/4+ вправо. */
 .po-bracket-grid {
   display: grid;
   grid-auto-flow: column;
@@ -316,7 +304,7 @@ body.po-wall {
   padding-bottom: 6px;
 }
 
-/* round */
+/* rounds */
 .po-round {
   min-width: var(--po-col);
   border-radius: 18px;
@@ -353,54 +341,41 @@ body.po-wall {
   margin-bottom: 10px;
 }
 
-/* matches wrapper */
-.po-round-matches { display: block; }
-
-/* ✅ 1/8: раунд реально шире */
-.po-round[data-layout="two-col"]{
-  min-width: var(--po-col-16);
-}
-
-/* 1/8: две колонки "газетой", без сжатия карточек */
-.po-round[data-layout="two-col"] .po-round-matches{
-  column-count: 2;
-  column-gap: 12px;
-}
-.po-round[data-layout="two-col"] .po-match{
-  break-inside: avoid;
-  -webkit-column-break-inside: avoid;
-  page-break-inside: avoid;
-}
-
-/* match */
+/* match card — компактнее по высоте */
 .po-match {
   border-radius: 16px;
   border: 1px solid rgba(255,255,255,0.10);
   background: rgba(17,17,17,0.72);
-  padding: 10px 10px 10px;
+  padding: 8px 8px 8px;
   box-shadow: 0 14px 30px rgba(0,0,0,0.45);
   margin-bottom: 10px;
-
-  /* страховка от чужих стилей */
   position: static !important;
   transform: none !important;
 }
 .po-match:last-child { margin-bottom: 0; }
 
+/* player row with score on the right */
 .po-player {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto;
   align-items: center;
-  justify-content: space-between;
   gap: 10px;
   padding: 6px 8px;
   border-radius: 12px;
   border: 1px solid rgba(255,255,255,0.08);
   background: rgba(0,0,0,0.22);
-
   position: static !important;
   transform: none !important;
 }
 .po-player + .po-player { margin-top: 6px; }
+
+.po-player-left {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
+}
 
 .po-player-name {
   font-size: 12px;
@@ -408,6 +383,7 @@ body.po-wall {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  min-width: 0;
 }
 
 .po-player-tag {
@@ -420,27 +396,27 @@ body.po-wall {
   flex: 0 0 auto;
 }
 
+/* score pill on the right */
+.po-player-score {
+  font-weight: 900;
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(0,0,0,0.40);
+  color: var(--text-main);
+  min-width: 44px;
+  text-align: center;
+}
+.po-player-score--empty { color: var(--text-muted); }
+
 .po-player--winner {
   border-color: var(--cup-win);
   box-shadow: 0 0 0 6px var(--cup-win-soft);
 }
 
-.po-score {
-  margin: 8px auto 0;
-  width: fit-content;
-  font-weight: 900;
-  font-size: 13px;
-  padding: 6px 12px;
-  border-radius: 999px;
-  border: 1px solid rgba(255,255,255,0.12);
-  background: rgba(0,0,0,0.40);
-  color: var(--text-main);
-
-  position: static !important;
-  transform: none !important;
-}
-
-.po-score--empty { color: var(--text-muted); }
+/* remove old bottom score if exists */
+.po-score { display: none !important; }
 
 .po-empty { padding: 18px 12px; text-align: center; color: var(--text-muted); font-size: 12px; }
 

@@ -18,6 +18,11 @@
   <div class="po-toolbar">
     <div class="po-toolbar-left">
       <a class="po-mini-link" href="index.html" title="На публичную страницу">←</a>
+      <div class="po-switch" role="tablist" aria-label="Показать кубок">
+        <button class="po-switch-btn" type="button" data-cup="masters" role="tab" aria-selected="false">Мастера</button>
+        <button class="po-switch-btn" type="button" data-cup="both" role="tab" aria-selected="true">Оба</button>
+        <button class="po-switch-btn" type="button" data-cup="challenge" role="tab" aria-selected="false">Вызов</button>
+      </div>
       <span class="po-mini-hint">1 — Мастера · 2 — Вызов · 0 — Оба · P — PNG · +/− — Zoom</span>
     </div>
     <button id="export-png" class="po-fab" title="Скачать PNG (P)">PNG</button>

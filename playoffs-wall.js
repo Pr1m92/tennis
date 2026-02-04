@@ -20,7 +20,6 @@ const subtitleEl = document.getElementById("po-subtitle");
 const switchButtons = Array.from(document.querySelectorAll(".po-switch-btn"));
 
 const params = new URLSearchParams(location.search);
-
 let lastRemoteState = null;
 
 function escapeHtml(str) {
@@ -38,7 +37,8 @@ function normalizeState(state) {
     ...structuredClone(EMPTY_STATE),
     ...s,
     tournaments: Array.isArray(s.tournaments) ? s.tournaments : [],
-    activeTournamentId: typeof s.activeTournamentId === "string" ? s.activeTournamentId : null,
+    activeTournamentId:
+      typeof s.activeTournamentId === "string" ? s.activeTournamentId : null,
   };
 }
 
@@ -114,7 +114,10 @@ function setParam(key, value) {
 }
 
 function applyFromUrl() {
-  const zoom = Math.max(0.7, Math.min(1.8, parseFloat(params.get("zoom") || "1") || 1));
+  const zoom = Math.max(
+    0.7,
+    Math.min(1.8, parseFloat(params.get("zoom") || "1") || 1)
+  );
   document.documentElement.style.setProperty("--po-zoom", String(zoom));
 
   const cup = (params.get("cup") || "both").toLowerCase();
@@ -127,8 +130,7 @@ function applyFromUrl() {
     b.setAttribute("aria-selected", isActive ? "true" : "false");
   }
 
-  const mode = cup === "both" ? "both" : "single";
-  cupsRoot.dataset.mode = mode;
+  cupsRoot.dataset.mode = cup === "both" ? "both" : "single";
 
   // subtitle
   if (subtitleEl) {
@@ -187,7 +189,10 @@ async function exportPng() {
     if (toolbar) toolbar.style.visibility = "hidden";
     await new Promise((r) => requestAnimationFrame(r));
 
-    const scale = Math.max(2, Math.min(5, parseFloat(params.get("pngScale") || "3") || 3));
+    const scale = Math.max(
+      2,
+      Math.min(5, parseFloat(params.get("pngScale") || "3") || 3)
+    );
 
     const canvas = await window.html2canvas(wall, {
       scale,
@@ -282,18 +287,18 @@ function renderCup({ bracket, playersMap, cupKey, title, subtitle }) {
 
   const podiumWrap = document.createElement("div");
   podiumWrap.className = "po-podium-wrap";
-  podiumWrap.appendChild(renderPodium(bracket, playersMap, cupKey));
+  podiumWrap.appendChild(renderPodium(bracket, playersMap));
   wrap.appendChild(podiumWrap);
 
   const bracketWrap = document.createElement("div");
   bracketWrap.className = "po-bracket";
-  bracketWrap.appendChild(renderBracket(bracket, playersMap, cupKey));
+  bracketWrap.appendChild(renderBracket(bracket, playersMap));
   wrap.appendChild(bracketWrap);
 
   return wrap;
 }
 
-function renderPodium(bracket, playersMap, cupKey) {
+function renderPodium(bracket, playersMap) {
   const winners = extractWinnersFromBracket(bracket);
   const goldName = winners.gold ? getPlayerName(playersMap, winners.gold) : "—";
   const silverName = winners.silver ? getPlayerName(playersMap, winners.silver) : "—";
@@ -323,13 +328,13 @@ function renderPodium(bracket, playersMap, cupKey) {
     </div>
 
     <div class="po-podium-note">
-      Подсказка: чтобы сделать отдельную картинку — открой <b>?cup=masters</b> или <b>?cup=challenge</b> и жми <b>PNG</b>.
+      Подсказка: для отдельной картинки — открой <b>?cup=masters</b> или <b>?cup=challenge</b> и жми <b>PNG</b>.
     </div>
   `;
   return box;
 }
 
-function renderBracket(bracket, playersMap, cupKey) {
+function renderBracket(bracket, playersMap) {
   if (!bracket || !Array.isArray(bracket.rounds) || bracket.rounds.length === 0) {
     const empty = document.createElement("div");
     empty.className = "po-empty";
@@ -340,11 +345,14 @@ function renderBracket(bracket, playersMap, cupKey) {
   const rounds = [...bracket.rounds];
 
   const third = rounds.find((r) => r.name === "Матч за 3-е место") || null;
+
   const mainRounds = rounds
     .filter((r) => r.name !== "Матч за 3-е место")
     .sort((a, b) => (a.roundIndex ?? 999) - (b.roundIndex ?? 999));
 
-  // добавим «Матч за 3-е» как отдельную колонку рядом с финалом (в конце)
+  const firstMainRound = mainRounds[0] || null;
+
+  // колонки: основные + матч за 3-е место в конце (если есть)
   const columns = [...mainRounds];
   if (third) columns.push(third);
 
@@ -356,8 +364,16 @@ function renderBracket(bracket, playersMap, cupKey) {
     const col = document.createElement("div");
     col.className = "po-round";
 
-    const total = Array.isArray(r.matches) ? r.matches.length : 0;
-    const played = (r.matches || []).filter((m) => isValidScore(m?.score1, m?.score2)).length;
+    const isFirstRound = firstMainRound && r === firstMainRound;
+    const matches = Array.isArray(r.matches) ? r.matches : [];
+
+    // ВАЖНО: в 1 раунде показываем только полные пары
+    const visibleMatches = isFirstRound
+      ? matches.filter((m) => m?.player1Id && m?.player2Id)
+      : matches;
+
+    const total = visibleMatches.length;
+    const played = visibleMatches.filter((m) => isValidScore(m?.score1, m?.score2)).length;
 
     col.innerHTML = `
       <div class="po-round-title">
@@ -366,17 +382,19 @@ function renderBracket(bracket, playersMap, cupKey) {
       </div>
     `;
 
-    if (!r.matches || r.matches.length === 0) {
+    if (visibleMatches.length === 0) {
       const empty = document.createElement("div");
       empty.className = "po-empty";
-      empty.textContent = "Матчей нет";
+      empty.textContent = isFirstRound
+        ? "В этом раунде нет полных пар."
+        : "Матчей нет";
       col.appendChild(empty);
       grid.appendChild(col);
       continue;
     }
 
-    for (const m of r.matches) {
-      col.appendChild(renderMatch(m, playersMap, cupKey));
+    for (const m of visibleMatches) {
+      col.appendChild(renderMatch(m, playersMap, isFirstRound));
     }
 
     grid.appendChild(col);
@@ -385,7 +403,7 @@ function renderBracket(bracket, playersMap, cupKey) {
   return grid;
 }
 
-function renderMatch(m, playersMap, cupKey) {
+function renderMatch(m, playersMap, isFirstRound) {
   const card = document.createElement("div");
   card.className = "po-match";
 
@@ -406,8 +424,10 @@ function renderMatch(m, playersMap, cupKey) {
   const p1Class = "po-player" + (w1 ? " po-player--winner" : "");
   const p2Class = "po-player" + (w2 ? " po-player--winner" : "");
 
-  const tag1 = !m.player1Id ? "—" : "Игрок";
-  const tag2 = !m.player2Id ? "BYE" : "Игрок";
+  // В 1 раунде у нас не будет пустых слотов (мы их фильтруем),
+  // но в остальных раундах BYE остаётся как индикатор.
+  const tag1 = !m.player1Id ? (isFirstRound ? "" : "BYE") : "Игрок";
+  const tag2 = !m.player2Id ? (isFirstRound ? "" : "BYE") : "Игрок";
 
   const scoreText = valid ? `${s1}:${s2}` : "— : —";
   const scoreClass = "po-score" + (valid ? "" : " po-score--empty");
@@ -415,12 +435,12 @@ function renderMatch(m, playersMap, cupKey) {
   card.innerHTML = `
     <div class="${p1Class}">
       <div class="po-player-name">${p1}</div>
-      <div class="po-player-tag">${tag1}</div>
+      <div class="po-player-tag">${escapeHtml(tag1 || "Игрок")}</div>
     </div>
 
     <div class="${p2Class}">
       <div class="po-player-name">${p2}</div>
-      <div class="po-player-tag">${tag2}</div>
+      <div class="po-player-tag">${escapeHtml(tag2 || "Игрок")}</div>
     </div>
 
     <div class="${scoreClass}">${scoreText}</div>

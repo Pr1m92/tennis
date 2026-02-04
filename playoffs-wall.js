@@ -1,4 +1,16 @@
 // playoffs-wall.js
+// «Арена» плей-офф: Кубок мастеров / Кубок вызова. Экспорт в PNG.
+//
+// URL параметры:
+//   cup=masters|challenge|both (по умолчанию both)
+//   zoom=0.7..1.8
+//   pngScale=2..5
+//
+// Hotkeys:
+//   1 — masters, 2 — challenge, 0 — оба
+//   + / - — zoom
+//   P — export PNG
+
 import { subscribeToState, EMPTY_STATE } from "./firebase.js";
 
 const exportBtn = document.getElementById("export-png");
@@ -8,6 +20,7 @@ const subtitleEl = document.getElementById("po-subtitle");
 const switchButtons = Array.from(document.querySelectorAll(".po-switch-btn"));
 
 const params = new URLSearchParams(location.search);
+
 let lastRemoteState = null;
 
 function escapeHtml(str) {
@@ -25,8 +38,7 @@ function normalizeState(state) {
     ...structuredClone(EMPTY_STATE),
     ...s,
     tournaments: Array.isArray(s.tournaments) ? s.tournaments : [],
-    activeTournamentId:
-      typeof s.activeTournamentId === "string" ? s.activeTournamentId : null,
+    activeTournamentId: typeof s.activeTournamentId === "string" ? s.activeTournamentId : null,
   };
 }
 
@@ -102,10 +114,7 @@ function setParam(key, value) {
 }
 
 function applyFromUrl() {
-  const zoom = Math.max(
-    0.7,
-    Math.min(1.8, parseFloat(params.get("zoom") || "1") || 1)
-  );
+  const zoom = Math.max(0.7, Math.min(1.8, parseFloat(params.get("zoom") || "1") || 1));
   document.documentElement.style.setProperty("--po-zoom", String(zoom));
 
   const cup = (params.get("cup") || "both").toLowerCase();
@@ -117,7 +126,8 @@ function applyFromUrl() {
     b.setAttribute("aria-selected", isActive ? "true" : "false");
   }
 
-  cupsRoot.dataset.mode = cup === "both" ? "both" : "single";
+  const mode = cup === "both" ? "both" : "single";
+  cupsRoot.dataset.mode = mode;
 
   if (subtitleEl) {
     subtitleEl.textContent =
@@ -174,10 +184,7 @@ async function exportPng() {
     if (toolbar) toolbar.style.visibility = "hidden";
     await new Promise((r) => requestAnimationFrame(r));
 
-    const scale = Math.max(
-      2,
-      Math.min(5, parseFloat(params.get("pngScale") || "3") || 3)
-    );
+    const scale = Math.max(2, Math.min(5, parseFloat(params.get("pngScale") || "3") || 3));
 
     const canvas = await window.html2canvas(wall, {
       scale,
@@ -205,27 +212,6 @@ async function exportPng() {
 if (exportBtn) exportBtn.addEventListener("click", exportPng);
 
 // --------------------
-// Helpers
-// --------------------
-function normalizeRoundLabel(nameRaw) {
-  const name = String(nameRaw || "").trim();
-  const low = name.toLowerCase();
-
-  if (low.includes("1/8")) return { title: "1/8 финала", badge: "1/8" };
-  if (low.includes("1/4")) return { title: "1/4 финала", badge: "1/4" };
-  if (low.includes("1/2")) return { title: "1/2 финала", badge: "1/2" };
-  if (low === "финал") return { title: "Финал", badge: "🏆" };
-  if (low.includes("3")) return { title: "Матч за 3-е место", badge: "🥉" };
-
-  return { title: name || "Раунд", badge: "" };
-}
-
-function isEighthFinal(nameRaw) {
-  const low = String(nameRaw || "").toLowerCase();
-  return low.includes("1/8");
-}
-
-// --------------------
 // Render
 // --------------------
 function render(stateRaw) {
@@ -247,6 +233,7 @@ function render(stateRaw) {
   const challenge = po.challengeBracket || null;
 
   const cupMode = (params.get("cup") || "both").toLowerCase();
+
   const showMasters = cupMode === "both" || cupMode === "masters";
   const showChallenge = cupMode === "both" || cupMode === "challenge";
 
@@ -297,7 +284,7 @@ function renderCup({ bracket, playersMap, cupKey, title, subtitle }) {
 
   const bracketWrap = document.createElement("div");
   bracketWrap.className = "po-bracket";
-  bracketWrap.appendChild(renderBracket(bracket, playersMap));
+  bracketWrap.appendChild(renderBracket(bracket, playersMap, cupKey));
   wrap.appendChild(bracketWrap);
 
   return wrap;
@@ -332,13 +319,13 @@ function renderPodium(bracket, playersMap) {
     </div>
 
     <div class="po-podium-note">
-      Подсказка: для отдельной картинки — открой <b>?cup=masters</b> или <b>?cup=challenge</b> и жми <b>PNG</b>.
+      Подсказка: отдельная картинка — открой <b>?cup=masters</b> или <b>?cup=challenge</b> и жми <b>PNG</b>.
     </div>
   `;
   return box;
 }
 
-function renderBracket(bracket, playersMap) {
+function renderBracket(bracket, playersMap, cupKey) {
   if (!bracket || !Array.isArray(bracket.rounds) || bracket.rounds.length === 0) {
     const empty = document.createElement("div");
     empty.className = "po-empty";
@@ -353,8 +340,6 @@ function renderBracket(bracket, playersMap) {
     .filter((r) => r.name !== "Матч за 3-е место")
     .sort((a, b) => (a.roundIndex ?? 999) - (b.roundIndex ?? 999));
 
-  const firstMainRound = mainRounds[0] || null;
-
   const columns = [...mainRounds];
   if (third) columns.push(third);
 
@@ -365,53 +350,55 @@ function renderBracket(bracket, playersMap) {
     const col = document.createElement("div");
     col.className = "po-round";
 
-    const isFirstRound = firstMainRound && r === firstMainRound;
-    const matches = Array.isArray(r.matches) ? r.matches : [];
+    // ✅ В Раунде 1 показываем ТОЛЬКО полные пары (как ты хотел раньше)
+    const rawMatches = Array.isArray(r.matches) ? r.matches : [];
+    const matches =
+      (r.name === "Раунд 1" || r.name === "Раунд 1 ") // на всякий
+        ? rawMatches.filter((m) => m?.player1Id && m?.player2Id)
+        : rawMatches;
 
-    // В первом раунде показываем только полные пары
-    const visibleMatches = isFirstRound
-      ? matches.filter((m) => m?.player1Id && m?.player2Id)
-      : matches;
-
-    // 1/8 финала — два столбца
-    if (!isFirstRound && isEighthFinal(r?.name)) {
-      col.dataset.layout = "two-col";
-    }
-
-    const { title, badge } = normalizeRoundLabel(r?.name);
-    const total = visibleMatches.length;
-    const played = visibleMatches.filter((m) => isValidScore(m?.score1, m?.score2)).length;
+    const total = matches.length;
+    const played = matches.filter((m) => isValidScore(m?.score1, m?.score2)).length;
 
     col.innerHTML = `
       <div class="po-round-title">
-        <b>${escapeHtml(title)}</b>
+        <b>${escapeHtml(r.name || "Раунд")}</b>
         <span>${total ? `Сыграно ${played}/${total}` : ""}</span>
       </div>
-      ${badge ? `<div class="po-round-badge">Матчи ${escapeHtml(badge)}</div>` : ``}
     `;
 
-    const matchesWrap = document.createElement("div");
-    matchesWrap.className = "po-round-matches";
+    // маленький бейджик для визуальной ясности
+    const badge = document.createElement("div");
+    badge.className = "po-round-badge";
+    badge.textContent =
+      r.name === "1/8 финала" ? "Матчи 1/8" :
+      r.name === "1/4 финала" ? "Матчи 1/4" :
+      r.name === "1/2 финала" ? "Матчи 1/2" :
+      r.name === "Финал" ? "Матч 🏆" :
+      r.name === "Матч за 3-е место" ? "Матч 🥉" :
+      "Матчи";
+    col.appendChild(badge);
 
-    if (visibleMatches.length === 0) {
+    if (!matches.length) {
       const empty = document.createElement("div");
       empty.className = "po-empty";
-      empty.textContent = isFirstRound ? "В этом раунде нет полных пар." : "Матчей нет";
-      matchesWrap.appendChild(empty);
-    } else {
-      for (const m of visibleMatches) {
-        matchesWrap.appendChild(renderMatch(m, playersMap));
-      }
+      empty.textContent = "Матчей нет";
+      col.appendChild(empty);
+      grid.appendChild(col);
+      continue;
     }
 
-    col.appendChild(matchesWrap);
+    for (const m of matches) {
+      col.appendChild(renderMatch(m, playersMap, cupKey));
+    }
+
     grid.appendChild(col);
   }
 
   return grid;
 }
 
-function renderMatch(m, playersMap) {
+function renderMatch(m, playersMap, cupKey) {
   const card = document.createElement("div");
   card.className = "po-match";
 
@@ -432,24 +419,30 @@ function renderMatch(m, playersMap) {
   const p1Class = "po-player" + (w1 ? " po-player--winner" : "");
   const p2Class = "po-player" + (w2 ? " po-player--winner" : "");
 
-  const tag1 = !m.player1Id ? "BYE" : "Игрок";
+  const tag1 = !m.player1Id ? "—" : "Игрок";
   const tag2 = !m.player2Id ? "BYE" : "Игрок";
 
-  const scoreText = valid ? `${s1}:${s2}` : "— : —";
-  const scoreClass = "po-score" + (valid ? "" : " po-score--empty");
+  const score1Text = valid ? String(s1) : "—";
+  const score2Text = valid ? String(s2) : "—";
+  const score1Class = "po-player-score" + (valid ? "" : " po-player-score--empty");
+  const score2Class = "po-player-score" + (valid ? "" : " po-player-score--empty");
 
   card.innerHTML = `
     <div class="${p1Class}">
-      <div class="po-player-name">${p1}</div>
-      <div class="po-player-tag">${escapeHtml(tag1)}</div>
+      <div class="po-player-left">
+        <div class="po-player-name">${p1}</div>
+        <div class="po-player-tag">${tag1}</div>
+      </div>
+      <div class="${score1Class}">${score1Text}</div>
     </div>
 
     <div class="${p2Class}">
-      <div class="po-player-name">${p2}</div>
-      <div class="po-player-tag">${escapeHtml(tag2)}</div>
+      <div class="po-player-left">
+        <div class="po-player-name">${p2}</div>
+        <div class="po-player-tag">${tag2}</div>
+      </div>
+      <div class="${score2Class}">${score2Text}</div>
     </div>
-
-    <div class="${scoreClass}">${scoreText}</div>
   `;
 
   return card;

@@ -3,7 +3,7 @@
 
 :root {
   --po-zoom: 1;
-  --po-gap: 18px;
+  --po-gap: 16px;
 
   /* базовые */
   --po-card: rgba(17, 17, 17, 0.92);
@@ -137,9 +137,10 @@ body.po-wall {
 /* arena */
 .po-root {
   width: 100%;
-  max-width: 1400px;
+  /* было 1400 — расширяем, чтобы влезали финал+3е место */
+  max-width: 1900px;
   margin: 0 auto;
-  padding: 16px 14px 60px;
+  padding: 14px 14px 60px;
   transform: scale(var(--po-zoom));
   transform-origin: top center;
 }
@@ -157,7 +158,7 @@ body.po-wall {
   overflow: hidden;
 }
 
-/* прожектора (оставляем фирменные жёлтые — они "арена") */
+/* прожектора (фирменные жёлтые — они "арена") */
 .po-arena::before,
 .po-arena::after {
   content: "";
@@ -208,7 +209,7 @@ body.po-wall {
 .po-stage {
   position: relative;
   height: 24px;
-  margin: 10px auto 18px;
+  margin: 10px auto 16px;
 }
 .po-stage-line {
   position: absolute;
@@ -232,7 +233,7 @@ body.po-wall {
   display: grid;
   gap: var(--po-gap);
   grid-template-columns: 1fr;
-  padding: 12px 12px 28px;
+  padding: 12px 12px 24px;
 }
 
 @media (min-width: 1100px) {
@@ -382,15 +383,15 @@ body.po-wall {
 
 .po-bracket-grid {
   display: grid;
-  gap: 14px;
+  gap: 12px;
   align-items: start;
   overflow-x: auto;
   padding-bottom: 6px;
 }
 
-/* columns count is dynamic via inline style; keep cards tidy */
+/* немного уменьшаем базовую ширину колонок — больше раундов помещается */
 .po-round {
-  min-width: 220px;
+  min-width: 200px;
   border-radius: 18px;
   border: 1px solid rgba(255,255,255,0.06);
   background: rgba(0,0,0,0.22);
@@ -406,9 +407,48 @@ body.po-wall {
   gap: 8px;
   margin-bottom: 10px;
 }
-
 .po-round-title b { color: var(--text-main); }
 
+/* контейнер матчей внутри раунда */
+.po-round-matches {
+  display: block;
+}
+
+/* ДВУХКОЛОНОЧНЫЙ режим для перегруженных раундов (например 1/8) */
+.po-round[data-layout="two-col"] .po-round-matches {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+/* чуть компактнее карточки, чтобы меньше тянуло по высоте */
+.po-round[data-layout="two-col"] .po-match {
+  margin: 0;
+  padding: 8px 8px 8px;
+  border-radius: 14px;
+}
+
+.po-round[data-layout="two-col"] .po-player {
+  padding: 5px 7px;
+  border-radius: 11px;
+}
+
+.po-round[data-layout="two-col"] .po-player-name {
+  font-size: 11px;
+}
+
+.po-round[data-layout="two-col"] .po-player-tag {
+  font-size: 9px;
+  padding: 2px 7px;
+}
+
+.po-round[data-layout="two-col"] .po-score {
+  margin-top: 6px;
+  font-size: 12px;
+  padding: 5px 10px;
+}
+
+/* match */
 .po-match {
   border-radius: 16px;
   border: 1px solid rgba(255,255,255,0.08);
@@ -417,7 +457,6 @@ body.po-wall {
   box-shadow: 0 14px 30px rgba(0,0,0,0.45);
   margin-bottom: 10px;
 }
-
 .po-match:last-child { margin-bottom: 0; }
 
 .po-player {

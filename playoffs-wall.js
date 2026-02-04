@@ -220,6 +220,16 @@ async function exportPng() {
 if (exportBtn) exportBtn.addEventListener("click", exportPng);
 
 // --------------------
+// Render helpers
+// --------------------
+function shouldTwoColLayout(roundName, visibleMatchesCount) {
+  const name = (roundName || "").toLowerCase();
+  // Основной смысл: 1/8 (обычно 8 матчей) или любой раунд с большим числом матчей
+  if (name.includes("1/8")) return true;
+  return visibleMatchesCount >= 7; // порог можно менять
+}
+
+// --------------------
 // Render
 // --------------------
 function render(stateRaw) {
@@ -241,7 +251,6 @@ function render(stateRaw) {
   const challenge = po.challengeBracket || null;
 
   const cupMode = (params.get("cup") || "both").toLowerCase();
-
   const showMasters = cupMode === "both" || cupMode === "masters";
   const showChallenge = cupMode === "both" || cupMode === "challenge";
 
@@ -358,7 +367,7 @@ function renderBracket(bracket, playersMap) {
 
   const grid = document.createElement("div");
   grid.className = "po-bracket-grid";
-  grid.style.gridTemplateColumns = `repeat(${columns.length}, minmax(220px, 1fr))`;
+  grid.style.gridTemplateColumns = `repeat(${columns.length}, minmax(200px, 1fr))`;
 
   for (const r of columns) {
     const col = document.createElement("div");
@@ -367,10 +376,17 @@ function renderBracket(bracket, playersMap) {
     const isFirstRound = firstMainRound && r === firstMainRound;
     const matches = Array.isArray(r.matches) ? r.matches : [];
 
-    // ВАЖНО: в 1 раунде показываем только полные пары
+    // В 1 раунде показываем только полные пары
     const visibleMatches = isFirstRound
       ? matches.filter((m) => m?.player1Id && m?.player2Id)
       : matches;
+
+    // Двухколоночная раскладка для перегруженных раундов (обычно 1/8)
+    const enableTwoCol = !isFirstRound && r?.name !== "Матч за 3-е место"
+      ? shouldTwoColLayout(r?.name, visibleMatches.length)
+      : false;
+
+    if (enableTwoCol) col.dataset.layout = "two-col";
 
     const total = visibleMatches.length;
     const played = visibleMatches.filter((m) => isValidScore(m?.score1, m?.score2)).length;
@@ -382,21 +398,26 @@ function renderBracket(bracket, playersMap) {
       </div>
     `;
 
+    const matchesWrap = document.createElement("div");
+    matchesWrap.className = "po-round-matches";
+
     if (visibleMatches.length === 0) {
       const empty = document.createElement("div");
       empty.className = "po-empty";
       empty.textContent = isFirstRound
         ? "В этом раунде нет полных пар."
         : "Матчей нет";
-      col.appendChild(empty);
+      matchesWrap.appendChild(empty);
+      col.appendChild(matchesWrap);
       grid.appendChild(col);
       continue;
     }
 
     for (const m of visibleMatches) {
-      col.appendChild(renderMatch(m, playersMap, isFirstRound));
+      matchesWrap.appendChild(renderMatch(m, playersMap, isFirstRound));
     }
 
+    col.appendChild(matchesWrap);
     grid.appendChild(col);
   }
 
@@ -424,7 +445,7 @@ function renderMatch(m, playersMap, isFirstRound) {
   const p1Class = "po-player" + (w1 ? " po-player--winner" : "");
   const p2Class = "po-player" + (w2 ? " po-player--winner" : "");
 
-  // В 1 раунде у нас не будет пустых слотов (мы их фильтруем),
+  // В 1 раунде пустых слотов не будет (мы фильтруем),
   // но в остальных раундах BYE остаётся как индикатор.
   const tag1 = !m.player1Id ? (isFirstRound ? "" : "BYE") : "Игрок";
   const tag2 = !m.player2Id ? (isFirstRound ? "" : "BYE") : "Игрок";

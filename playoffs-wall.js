@@ -225,22 +225,6 @@ function isEighthFinal(nameRaw) {
   return low.includes("1/8");
 }
 
-/* горизонтальный скролл колесом мыши */
-function enableWheelToHorizontalScroll(container) {
-  if (!container) return;
-  container.addEventListener(
-    "wheel",
-    (e) => {
-      // если пользователь явно скроллит по вертикали — переводим в горизонталь
-      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
-        container.scrollLeft += e.deltaY;
-        e.preventDefault();
-      }
-    },
-    { passive: false }
-  );
-}
-
 // --------------------
 // Render
 // --------------------
@@ -374,9 +358,6 @@ function renderBracket(bracket, playersMap) {
   const columns = [...mainRounds];
   if (third) columns.push(third);
 
-  const scroll = document.createElement("div");
-  scroll.className = "po-bracket-scroll";
-
   const grid = document.createElement("div");
   grid.className = "po-bracket-grid";
 
@@ -387,10 +368,12 @@ function renderBracket(bracket, playersMap) {
     const isFirstRound = firstMainRound && r === firstMainRound;
     const matches = Array.isArray(r.matches) ? r.matches : [];
 
+    // В первом раунде показываем только полные пары
     const visibleMatches = isFirstRound
       ? matches.filter((m) => m?.player1Id && m?.player2Id)
       : matches;
 
+    // 1/8 финала — два столбца
     if (!isFirstRound && isEighthFinal(r?.name)) {
       col.dataset.layout = "two-col";
     }
@@ -413,9 +396,7 @@ function renderBracket(bracket, playersMap) {
     if (visibleMatches.length === 0) {
       const empty = document.createElement("div");
       empty.className = "po-empty";
-      empty.textContent = isFirstRound
-        ? "В этом раунде нет полных пар."
-        : "Матчей нет";
+      empty.textContent = isFirstRound ? "В этом раунде нет полных пар." : "Матчей нет";
       matchesWrap.appendChild(empty);
     } else {
       for (const m of visibleMatches) {
@@ -427,12 +408,7 @@ function renderBracket(bracket, playersMap) {
     grid.appendChild(col);
   }
 
-  scroll.appendChild(grid);
-
-  // включаем “колёсико = горизонтальный скролл”
-  enableWheelToHorizontalScroll(scroll);
-
-  return scroll;
+  return grid;
 }
 
 function renderMatch(m, playersMap) {

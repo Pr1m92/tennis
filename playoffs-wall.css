@@ -1,6 +1,8 @@
 /* playoffs-wall.css */
 /* Прокрутка внутри каждого кубка (po-bracket).
-   1/8 финала — 2 колонки БЕЗ сжатия карточек, просто шире колонка раунда. */
+   1/8 финала — 2 колонки БЕЗ сжатия карточек.
+   Важно: grid-auto-columns = max-content, чтобы широкая 1/8 реально расширяла колонку,
+   и 1/4+ уезжали вправо (видны через прокрутку). */
 
 :root {
   --po-zoom: 1;
@@ -17,8 +19,8 @@
   --po-c-win-soft: rgba(80, 170, 255, 0.08);
 
   /* размеры сетки */
-  --po-col: 240px;          /* ширина обычной колонки */
-  --po-col-16: 520px;       /* ширина колонки 1/8 (2 столбца матчей) */
+  --po-col: 240px;          /* ширина обычного раунда */
+  --po-col-16: 520px;       /* ширина 1/8 (две колонки матчей) */
 }
 
 /* page */
@@ -301,10 +303,13 @@ body.po-wall {
 .po-bracket::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 999px; }
 .po-bracket::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.26); }
 
+/* 🔥 КЛЮЧЕВОЕ ИЗМЕНЕНИЕ:
+   max-content => каждая колонка берет ширину своего .po-round.
+   Тогда 1/8 станет шире и сдвинет 1/4+ вправо. */
 .po-bracket-grid {
   display: grid;
   grid-auto-flow: column;
-  grid-auto-columns: var(--po-col);
+  grid-auto-columns: max-content;
   gap: 12px;
   align-items: start;
   width: max-content;
@@ -313,6 +318,7 @@ body.po-wall {
 
 /* round */
 .po-round {
+  min-width: var(--po-col);
   border-radius: 18px;
   border: 1px solid rgba(255,255,255,0.10);
   background: rgba(6, 8, 10, 0.74);
@@ -350,12 +356,12 @@ body.po-wall {
 /* matches wrapper */
 .po-round-matches { display: block; }
 
-/* ✅ 1/8: делаем РАУНД шире (2 колонки матчей нормального размера) */
+/* ✅ 1/8: раунд реально шире */
 .po-round[data-layout="two-col"]{
-  width: var(--po-col-16);
+  min-width: var(--po-col-16);
 }
 
-/* 1/8: две колонки "газетой", но без уменьшения карточек */
+/* 1/8: две колонки "газетой", без сжатия карточек */
 .po-round[data-layout="two-col"] .po-round-matches{
   column-count: 2;
   column-gap: 12px;

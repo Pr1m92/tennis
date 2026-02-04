@@ -1,16 +1,4 @@
 // playoffs-wall.js
-// «Арена» плей-офф: Кубок мастеров / Кубок вызова. Экспорт в PNG.
-//
-// URL параметры:
-//   cup=masters|challenge|both (по умолчанию both)
-//   zoom=0.7..1.8
-//   pngScale=2..5
-//
-// Hotkeys:
-//   1 — masters, 2 — challenge, 0 — оба
-//   + / - — zoom
-//   P — export PNG
-
 import { subscribeToState, EMPTY_STATE } from "./firebase.js";
 
 const exportBtn = document.getElementById("export-png");
@@ -123,7 +111,6 @@ function applyFromUrl() {
   const cup = (params.get("cup") || "both").toLowerCase();
   document.body.dataset.cup = cup;
 
-  // sync switch UI
   for (const b of switchButtons) {
     const isActive = (b.dataset.cup || "").toLowerCase() === cup;
     b.classList.toggle("is-active", isActive);
@@ -132,7 +119,6 @@ function applyFromUrl() {
 
   cupsRoot.dataset.mode = cup === "both" ? "both" : "single";
 
-  // subtitle
   if (subtitleEl) {
     subtitleEl.textContent =
       cup === "masters"
@@ -145,7 +131,6 @@ function applyFromUrl() {
 
 applyFromUrl();
 
-// Switch click
 for (const b of switchButtons) {
   b.addEventListener("click", () => {
     const cup = (b.dataset.cup || "both").toLowerCase();
@@ -220,13 +205,26 @@ async function exportPng() {
 if (exportBtn) exportBtn.addEventListener("click", exportPng);
 
 // --------------------
-// Render helpers
+// Layout helpers
 // --------------------
-function shouldTwoColLayout(roundName, visibleMatchesCount) {
-  const name = (roundName || "").toLowerCase();
-  // Основной смысл: 1/8 (обычно 8 матчей) или любой раунд с большим числом матчей
-  if (name.includes("1/8")) return true;
-  return visibleMatchesCount >= 7; // порог можно менять
+function normalizeRoundLabel(nameRaw) {
+  const name = String(nameRaw || "").trim();
+  const low = name.toLowerCase();
+
+  // Красивые и короткие названия (чтобы людям было очевидно)
+  if (low.includes("1/8")) return { title: "1/8 финала", badge: "1/8" };
+  if (low.includes("1/4")) return { title: "1/4 финала", badge: "1/4" };
+  if (low.includes("1/2")) return { title: "1/2 финала", badge: "1/2" };
+  if (low === "финал") return { title: "Финал", badge: "🏆" };
+  if (low.includes("3")) return { title: "Матч за 3-е место", badge: "🥉" };
+
+  // если вдруг приходит "Раунд 1" — оставим как есть
+  return { title: name || "Раунд", badge: "" };
+}
+
+function isEighthFinal(nameRaw) {
+  const low = String(nameRaw || "").toLowerCase();
+  return low.includes("1/8");
 }
 
 // --------------------
@@ -361,7 +359,6 @@ function renderBracket(bracket, playersMap) {
 
   const firstMainRound = mainRounds[0] || null;
 
-  // колонки: основные + матч за 3-е место в конце (если есть)
   const columns = [...mainRounds];
   if (third) columns.push(third);
 
@@ -381,21 +378,21 @@ function renderBracket(bracket, playersMap) {
       ? matches.filter((m) => m?.player1Id && m?.player2Id)
       : matches;
 
-    // Двухколоночная раскладка для перегруженных раундов (обычно 1/8)
-    const enableTwoCol = !isFirstRound && r?.name !== "Матч за 3-е место"
-      ? shouldTwoColLayout(r?.name, visibleMatches.length)
-      : false;
+    // ДВЕ КОЛОНКИ — строго для 1/8 (и только там)
+    if (!isFirstRound && isEighthFinal(r?.name)) {
+      col.dataset.layout = "two-col";
+    }
 
-    if (enableTwoCol) col.dataset.layout = "two-col";
-
+    const { title, badge } = normalizeRoundLabel(r?.name);
     const total = visibleMatches.length;
     const played = visibleMatches.filter((m) => isValidScore(m?.score1, m?.score2)).length;
 
     col.innerHTML = `
       <div class="po-round-title">
-        <b>${escapeHtml(r.name || "Раунд")}</b>
+        <b>${escapeHtml(title)}</b>
         <span>${total ? `Сыграно ${played}/${total}` : ""}</span>
       </div>
+      ${badge ? `<div class="po-round-badge">Матчи ${escapeHtml(badge)}</div>` : ``}
     `;
 
     const matchesWrap = document.createElement("div");
@@ -445,8 +442,6 @@ function renderMatch(m, playersMap, isFirstRound) {
   const p1Class = "po-player" + (w1 ? " po-player--winner" : "");
   const p2Class = "po-player" + (w2 ? " po-player--winner" : "");
 
-  // В 1 раунде пустых слотов не будет (мы фильтруем),
-  // но в остальных раундах BYE остаётся как индикатор.
   const tag1 = !m.player1Id ? (isFirstRound ? "" : "BYE") : "Игрок";
   const tag2 = !m.player2Id ? (isFirstRound ? "" : "BYE") : "Игрок";
 

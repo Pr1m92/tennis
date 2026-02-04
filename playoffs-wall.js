@@ -17,8 +17,11 @@ const exportBtn = document.getElementById("export-png");
 const loadingEl = document.querySelector(".po-loading");
 const cupsRoot = document.getElementById("cups-root");
 const subtitleEl = document.getElementById("po-subtitle");
+const switchButtons = Array.from(document.querySelectorAll(".po-switch-btn"));
 
 const params = new URLSearchParams(location.search);
+
+let lastRemoteState = null;
 
 function escapeHtml(str) {
   if (!str) return "";
@@ -107,6 +110,7 @@ function setParam(key, value) {
   const url = `${location.pathname}?${params.toString()}`;
   history.replaceState(null, "", url);
   applyFromUrl();
+  if (lastRemoteState) render(lastRemoteState);
 }
 
 function applyFromUrl() {
@@ -115,6 +119,13 @@ function applyFromUrl() {
 
   const cup = (params.get("cup") || "both").toLowerCase();
   document.body.dataset.cup = cup;
+
+  // sync switch UI
+  for (const b of switchButtons) {
+    const isActive = (b.dataset.cup || "").toLowerCase() === cup;
+    b.classList.toggle("is-active", isActive);
+    b.setAttribute("aria-selected", isActive ? "true" : "false");
+  }
 
   const mode = cup === "both" ? "both" : "single";
   cupsRoot.dataset.mode = mode;
@@ -131,6 +142,14 @@ function applyFromUrl() {
 }
 
 applyFromUrl();
+
+// Switch click
+for (const b of switchButtons) {
+  b.addEventListener("click", () => {
+    const cup = (b.dataset.cup || "both").toLowerCase();
+    setParam("cup", cup);
+  });
+}
 
 window.addEventListener("keydown", (e) => {
   const k = e.key.toLowerCase();
@@ -412,4 +431,7 @@ function renderMatch(m, playersMap, cupKey) {
 
 // start
 loadingEl.style.display = "block";
-subscribeToState((remoteState) => render(remoteState));
+subscribeToState((remoteState) => {
+  lastRemoteState = remoteState;
+  render(remoteState);
+});

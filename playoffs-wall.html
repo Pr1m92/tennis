@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Плей-офф — Арена</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+
+  <link rel="stylesheet" href="styles.css?v=6" />
+  <link rel="stylesheet" href="playoffs-wall.css?v=1" />
+</head>
+
+<body class="po-wall">
+  <!-- мини-панель -->
+  <div class="po-toolbar">
+    <div class="po-toolbar-left">
+      <a class="po-mini-link" href="index.html" title="На публичную страницу">←</a>
+      <span class="po-mini-hint">1 — Мастера · 2 — Вызов · 0 — Оба · P — PNG · +/− — Zoom</span>
+    </div>
+    <button id="export-png" class="po-fab" title="Скачать PNG (P)">PNG</button>
+  </div>
+
+  <main class="po-root po-arena" id="po-root">
+    <div class="po-loading">Загрузка…</div>
+
+    <header class="po-hero">
+      <div class="po-hero-title">Плей-офф</div>
+      <div class="po-hero-subtitle" id="po-subtitle">Арена результатов</div>
+    </header>
+
+    <section class="po-stage">
+      <div class="po-stage-line"></div>
+      <div class="po-stage-line po-stage-line--soft"></div>
+    </section>
+
+    <section class="po-grid" id="cups-root">
+      <!-- cups render here -->
+    </section>
+  </main>
+
+  <!-- библиотека для экспорта в PNG -->
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+  <script type="module" src="playoffs-wall.js?v=1"></script>
+</body>
+</html>
